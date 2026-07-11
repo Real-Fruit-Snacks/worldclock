@@ -1,0 +1,13 @@
+# GitLab Pages deployment.
+# The site is static with no build step — the job just copies it into public/.
+pages:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - mkdir -p public
+    - cp -r index.html css js tests.html public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

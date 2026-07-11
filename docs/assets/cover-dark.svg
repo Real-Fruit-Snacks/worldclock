@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="World Clock — an offline world clock in the Terminal Workbench style">
+  <rect width="1200" height="300" rx="12" fill="#090c0d"/>
+  <rect x="0.5" y="0.5" width="1199" height="299" rx="12" fill="none" stroke="#2a363d"/>
+  <g stroke="#2a363d" stroke-width="0.6" opacity="0.35">
+    <line x1="150" y1="0" x2="150" y2="300"/><line x1="300" y1="0" x2="300" y2="300"/>
+    <line x1="450" y1="0" x2="450" y2="300"/><line x1="600" y1="0" x2="600" y2="300"/>
+    <line x1="750" y1="0" x2="750" y2="300"/><line x1="900" y1="0" x2="900" y2="300"/>
+    <line x1="1050" y1="0" x2="1050" y2="300"/>
+    <line x1="0" y1="75" x2="1200" y2="75"/><line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="225" x2="1200" y2="225"/>
+  </g>
+  <path d="M0 150 Q150 40 300 92 T600 120 T900 70 T1200 130 L1200 300 L0 300 Z" fill="#000000" opacity="0.30"/>
+  <circle cx="948" cy="66" r="9" fill="#f0c674"/>
+  <circle cx="948" cy="66" r="15" fill="none" stroke="#f0c674" stroke-width="1.2" opacity="0.5"/>
+  <g transform="translate(84,86) scale(8)">
+    <path d="M2 16 V7 Q2 1 8 1 Q14 1 14 7 V16 L12 14.4 L10 16 L8 14.4 L6 16 L4 14.4 Z" fill="#63f2ab"/>
+    <rect x="5" y="6" width="2" height="3" fill="#090c0d"/>
+    <rect x="9" y="6" width="2" height="3" fill="#090c0d"/>
+  </g>
+  <text x="248" y="142" font-family="'Cascadia Code','JetBrains Mono',Consolas,monospace" font-size="58" font-weight="700" letter-spacing="14" fill="#63f2ab">WORLD CLOCK</text>
+  <text x="252" y="182" font-family="'Cascadia Code','JetBrains Mono',Consolas,monospace" font-size="17" letter-spacing="3" fill="#879994">FULLY OFFLINE &#183; DAY/NIGHT MAP &#183; NO DEPENDENCIES</text>
+  <g font-family="'Cascadia Code','JetBrains Mono',Consolas,monospace" font-size="14">
+    <rect x="250" y="212" width="176" height="34" rx="6" fill="#0e1214" stroke="#2a363d"/>
+    <text x="266" y="234" fill="#63f2ab" letter-spacing="2">TOKYO</text>
+    <text x="352" y="234" fill="#dce4df">14:32</text>
+    <rect x="442" y="212" width="188" height="34" rx="6" fill="#0e1214" stroke="#2a363d"/>
+    <text x="458" y="234" fill="#63f2ab" letter-spacing="2">LONDON</text>
+    <text x="556" y="234" fill="#dce4df">06:32</text>
+    <rect x="646" y="212" width="200" height="34" rx="6" fill="#0e1214" stroke="#2a363d"/>
+    <text x="662" y="234" fill="#63f2ab" letter-spacing="2">NEW YORK</text>
+    <text x="774" y="234" fill="#dce4df">01:32</text>
+    <rect x="862" y="212" width="144" height="34" rx="6" fill="#0e1214" stroke="#2a363d"/>
+    <text x="878" y="234" fill="#f0c674" letter-spacing="2">UTC</text>
+    <text x="932" y="234" fill="#dce4df">05:32</text>
+  </g>
+</svg>

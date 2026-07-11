@@ -71,6 +71,7 @@ main {
   display: flex; justify-content: center; gap: 18px;
   padding: 14px; border-top: 1px solid var(--twb-border);
   font-size: 11px; color: var(--twb-text-faint);
+  background: var(--twb-bg-0); position: relative; z-index: 2;
 }
 .footer a { color: var(--twb-text-faint); }
 .footer a:hover { color: var(--twb-accent); }
