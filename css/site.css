@@ -226,6 +226,11 @@ main {
   cursor: pointer; text-align: left;
 }
 .zone-row:hover { background: var(--twb-bg-3); color: var(--twb-text-normal); }
+.zone-row.zone-row-active {
+  background: var(--twb-nav-active); color: var(--twb-text-normal);
+  box-shadow: inset 2px 0 0 var(--twb-accent);
+}
+.zone-row.zone-row-active .zone-id { color: var(--twb-text-soft); }
 .zone-id { color: var(--twb-text-faint); font-size: 11px; }
 .zone-empty { padding: 10px 12px; font-size: 11px; color: var(--twb-text-faint); }
 /* --- site pet (site.config.json: pet_enabled) --- */

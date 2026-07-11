@@ -195,7 +195,8 @@
     '<div class="modal-box panel">' +
     '<div class="panel-header"><span class="manifest-label" id="add-title">ADD TIMEZONE</span>' +
     '<button class="icon-btn" id="add-close" aria-label="Close">&times;</button></div>' +
-    '<input id="add-search" class="mono" type="text" placeholder="search city or zone…" autocomplete="off">' +
+    '<input id="add-search" class="mono" type="text" placeholder="search city or zone…" autocomplete="off"' +
+    ' role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="add-results">' +
     '<div id="add-results"></div>' +
     '<div class="panel-header"><span class="manifest-label">SUGGESTED</span></div>' +
     '<div id="add-suggested"></div></div>';
@@ -229,20 +230,46 @@
   }
 
   function zoneRow(zone) {
-    return '<button class="zone-row mono" data-zone="' + zone + '">' +
+    return '<button class="zone-row mono" role="option" data-zone="' + zone + '">' +
       '<span>' + WC.cityName(zone) + '</span><span class="zone-id">' + zone + "</span></button>";
+  }
+
+  /* Keyboard selection: arrows move a highlight through every visible row
+     (results first, then suggested); Enter picks it. Focus stays in the
+     search input, combobox-style. */
+  var activeIdx = -1;
+  function modalRows() { return modal.querySelectorAll(".zone-row"); }
+  function wireRows() {
+    var rows = modalRows();
+    for (var i = 0; i < rows.length; i++) rows[i].id = "zone-opt-" + i;
+    setActive(-1);
+  }
+  function setActive(idx) {
+    var rows = modalRows();
+    activeIdx = idx;
+    var inp = document.getElementById("add-search");
+    for (var i = 0; i < rows.length; i++)
+      rows[i].classList.toggle("zone-row-active", i === idx);
+    if (idx > -1 && rows[idx]) {
+      rows[idx].scrollIntoView({ block: "nearest" });
+      inp.setAttribute("aria-activedescendant", rows[idx].id);
+    } else {
+      inp.removeAttribute("aria-activedescendant");
+    }
   }
   function renderResults(matches) {
     var host = document.getElementById("add-results");
     var html = "";
     for (var i = 0; i < matches.length; i++) html += zoneRow(matches[i].zone);
     host.innerHTML = html || '<div class="zone-empty mono">no matches</div>';
+    wireRows();
   }
   function renderSuggested() {
     var host = document.getElementById("add-suggested");
     var html = "";
     for (var i = 0; i < WC.SUGGESTED.length; i++) html += zoneRow(WC.SUGGESTED[i]);
     host.innerHTML = html;
+    wireRows();
   }
 
   document.getElementById("btn-add").addEventListener("click", function () { openModal(false); });
@@ -260,9 +287,20 @@
     renderResults(WC.search(this.value));
   });
   document.getElementById("add-search").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      var first = document.querySelector("#add-results .zone-row");
-      if (first) choose(first.getAttribute("data-zone"));
+    var rows = modalRows(), n = rows.length;
+    if (e.key === "ArrowDown" && n) {
+      e.preventDefault();
+      setActive((activeIdx + 1) % n);
+    } else if (e.key === "ArrowUp" && n) {
+      e.preventDefault();
+      setActive((activeIdx - 1 + n) % n);
+    } else if (e.key === "Enter") {
+      if (activeIdx > -1 && rows[activeIdx]) {
+        choose(rows[activeIdx].getAttribute("data-zone"));
+      } else {
+        var first = document.querySelector("#add-results .zone-row");
+        if (first) choose(first.getAttribute("data-zone"));
+      }
     }
   });
   document.addEventListener("keydown", function (e) {
