@@ -131,3 +131,30 @@ main {
 .card-date { font-size: 11px; color: var(--twb-text-faint); margin-top: 7px; }
 .clock-card.dragging { opacity: 0.4; }
 .clock-card.drag-over { border-color: var(--twb-accent); }
+
+/* --- map --- */
+#map-host { position: relative; }
+.worldmap { display: block; width: 100%; height: auto; background: var(--twb-bg-0); }
+.map-graticule line { stroke: var(--twb-border); stroke-width: 0.5; opacity: 0.35; }
+.map-land { fill: var(--twb-bg-4); stroke: var(--twb-border-strong); stroke-width: 0.5; }
+.map-night { fill: #000; opacity: 0.34; pointer-events: none; }
+:root[data-theme="light"] .map-night { opacity: 0.18; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .map-night { opacity: 0.18; }
+}
+.map-sun-core { fill: var(--twb-warm); }
+.map-sun-halo { fill: none; stroke: var(--twb-warm); stroke-width: 1; opacity: 0.5; }
+.map-marker .marker-dot { fill: var(--twb-accent); }
+.map-marker .marker-ring { fill: none; stroke: var(--twb-accent); stroke-width: 1.2; }
+.map-marker { cursor: pointer; }
+.map-marker.marker-hilite .marker-dot { r: 5; }
+.map-marker.marker-hilite .marker-dot,
+.map-marker:hover .marker-dot { fill: var(--twb-accent-alt); }
+.map-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  padding: 3px 8px; font-size: 11px; white-space: nowrap;
+  background: var(--twb-bg-2); border: 1px solid var(--twb-border);
+  border-radius: var(--twb-radius-s); color: var(--twb-text-normal);
+  box-shadow: var(--twb-shadow-pane);
+}
+.clock-card.card-hilite { border-color: var(--twb-accent); }

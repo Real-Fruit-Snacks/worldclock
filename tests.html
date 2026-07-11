@@ -120,6 +120,27 @@ T("12h conversion", function () {
   assertEq(WC.time.format12(12).ampm, "PM", "12 is PM");
   assertEq(WC.time.format12(15).h12, 3, "15 -> 3");
 });
+T("solar position", function () {
+  var solstice = new Date(Date.UTC(2026, 5, 21, 12, 0, 0));
+  var equinox = new Date(Date.UTC(2026, 2, 20, 12, 0, 0));
+  assert(approx(WC.sun.declination(solstice), 23.43, 0.5),
+    "June solstice declination ~23.43, got " + WC.sun.declination(solstice));
+  assert(approx(WC.sun.declination(equinox), 0, 1.0),
+    "March equinox declination ~0, got " + WC.sun.declination(equinox));
+  var ss = WC.sun.subsolar(solstice);
+  assert(approx(ss.lon, 0, 3), "subsolar lon ~0 at 12:00 UTC, got " + ss.lon);
+  assert(approx(ss.lat, 23.43, 0.5), "subsolar lat = declination");
+  var elHigh = WC.sun.elevation(ss.lat, ss.lon, solstice);
+  assert(approx(elHigh, 90, 1), "elevation ~90 at subsolar point, got " + elHigh);
+  var elLow = WC.sun.elevation(-ss.lat, ss.lon + 180, solstice);
+  assert(approx(elLow, -90, 1), "elevation ~-90 at antipode, got " + elLow);
+});
+T("map data", function () {
+  assert(typeof WC.MAP_PATH === "string" && WC.MAP_PATH.length > 10000,
+    "MAP_PATH present and substantial");
+  assert(WC.MAP_PATH.charAt(0) === "M", "path starts with M");
+  assert(WC.MAP_PATH.indexOf("Z") > -1, "path has closed rings");
+});
 </script>
 </body>
 </html>
