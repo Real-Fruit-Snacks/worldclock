@@ -488,3 +488,22 @@ main {
   position: absolute; top: -2px; width: 2px; height: 7px;
   background: var(--twb-accent); border-radius: 1px;
 }
+
+/* --- map measure connector --- */
+.conn-line { stroke: var(--twb-accent-alt); stroke-width: 1.6; stroke-dasharray: 6 4; }
+.conn-dot { fill: var(--twb-accent-alt); }
+.conn-snap { fill: none; stroke: var(--twb-accent-alt); stroke-width: 1.4; opacity: 0.8; }
+.conn-chip {
+  position: absolute; z-index: 6; transform: translate(-50%, -140%);
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 8px; font-size: 11px; white-space: nowrap;
+  background: var(--twb-bg-2); border: 1px solid var(--twb-accent-alt);
+  border-radius: var(--twb-radius-s); color: var(--twb-text-normal);
+  box-shadow: var(--twb-shadow-pane);
+}
+.conn-chip .conn-x {
+  background: transparent; border: none; padding: 0 2px;
+  color: var(--twb-text-faint); font-size: 13px; cursor: pointer;
+  font-family: var(--twb-font-mono);
+}
+.conn-chip .conn-x:hover { color: var(--twb-red); }

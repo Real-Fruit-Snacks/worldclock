@@ -57,6 +57,7 @@
   }
 
   var svg = null, nightEl = null, sunEl = null, markersEl = null, tipEl = null;
+  var connEl = null, snapEl = null, chipEl = null, cdrag = null, conn = null;
 
   function el(name, attrs) {
     var e = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -85,11 +86,24 @@
     svg.appendChild(sunEl);
     markersEl = el("g", { "class": "map-markers" });
     svg.appendChild(markersEl);
+    connEl = el("g", { "class": "map-conn" });
+    svg.appendChild(connEl);
+    snapEl = el("circle", { r: 9, "class": "conn-snap", visibility: "hidden" });
+    svg.appendChild(snapEl);
     host.appendChild(svg);
     tipEl = document.createElement("div");
     tipEl.className = "map-tip mono";
     tipEl.setAttribute("hidden", "");
     host.appendChild(tipEl);
+    chipEl = document.createElement("div");
+    chipEl.className = "conn-chip mono";
+    chipEl.hidden = true;
+    host.appendChild(chipEl);
+    svg.style.touchAction = "none";
+    svg.addEventListener("pointerdown", connStart);
+    svg.addEventListener("pointermove", connMove);
+    window.addEventListener("pointerup", connEnd);
+    window.addEventListener("resize", function () { if (conn) updateChip(); });
     host.addEventListener("mousemove", onHover);
     host.addEventListener("mouseleave", function () { tipEl.setAttribute("hidden", ""); syncCards(null); });
   }
@@ -105,6 +119,7 @@
   }
 
   function onHover(e) {
+    if (cdrag && cdrag.moved) return;
     var t = e.target.closest ? e.target.closest(".map-marker") : null;
     if (!t) { tipEl.setAttribute("hidden", ""); syncCards(null); return; }
     var zone = t.getAttribute("data-zone");
@@ -130,6 +145,92 @@
     for (var i = 0; i < cards.length; i++)
       cards[i].classList.toggle("card-hilite", zone !== null &&
         cards[i].getAttribute("data-zone") === zone);
+  }
+
+  /* --- measure connector: drag between two points, ends snap to cities --- */
+  function eventLatLon(e) {
+    var r = svg.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width * W;
+    var y = (e.clientY - r.top) / r.height * H;
+    return { lat: 90 - y / H * 180, lon: x / W * 360 - 180 };
+  }
+  function connStart(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    var ll = eventLatLon(e);
+    var near = WC.nearestZone(ll.lat, ll.lon);
+    if (!near) return;
+    cdrag = { sx: e.clientX, sy: e.clientY, startZone: near.zone, moved: false };
+  }
+  function connMove(e) {
+    if (!cdrag) return;
+    var dx = e.clientX - cdrag.sx, dy = e.clientY - cdrag.sy;
+    if (!cdrag.moved && dx * dx + dy * dy < 36) return;
+    cdrag.moved = true;
+    var ll = eventLatLon(e);
+    var near = WC.nearestZone(ll.lat, ll.lon);
+    var A = WC.ZONES[cdrag.startZone];
+    connEl.innerHTML = "";
+    connEl.appendChild(el("line", { x1: px(A[1]).toFixed(1), y1: py(A[0]).toFixed(1),
+      x2: px(ll.lon).toFixed(1), y2: py(ll.lat).toFixed(1), "class": "conn-line" }));
+    connEl.appendChild(el("circle", { cx: px(A[1]).toFixed(1), cy: py(A[0]).toFixed(1), r: 4, "class": "conn-dot" }));
+    if (near) {
+      snapEl.setAttribute("cx", px(near.lon).toFixed(1));
+      snapEl.setAttribute("cy", py(near.lat).toFixed(1));
+      snapEl.setAttribute("visibility", "visible");
+    }
+    chipEl.hidden = true;
+    tipEl.setAttribute("hidden", "");
+  }
+  function connEnd(e) {
+    if (!cdrag) return;
+    var d = cdrag; cdrag = null;
+    snapEl.setAttribute("visibility", "hidden");
+    if (!d.moved) { WC.map.clearConnector(); return; }  /* plain click clears */
+    var ll = eventLatLon(e);
+    var near = WC.nearestZone(ll.lat, ll.lon);
+    if (!near || near.zone === d.startZone) { WC.map.clearConnector(); return; }
+    conn = { a: d.startZone, b: near.zone };
+    drawConn();
+  }
+  function drawConn() {
+    connEl.innerHTML = "";
+    if (!conn) { chipEl.hidden = true; return; }
+    var A = WC.ZONES[conn.a], B = WC.ZONES[conn.b];
+    connEl.appendChild(el("line", { x1: px(A[1]).toFixed(1), y1: py(A[0]).toFixed(1),
+      x2: px(B[1]).toFixed(1), y2: py(B[0]).toFixed(1), "class": "conn-line" }));
+    connEl.appendChild(el("circle", { cx: px(A[1]).toFixed(1), cy: py(A[0]).toFixed(1), r: 4, "class": "conn-dot" }));
+    connEl.appendChild(el("circle", { cx: px(B[1]).toFixed(1), cy: py(B[0]).toFixed(1), r: 4, "class": "conn-dot" }));
+    updateChip();
+  }
+  function connName(z) {
+    return ((WC.names && WC.names.display) ? WC.names.display(z) : WC.cityName(z));
+  }
+  function updateChip() {
+    if (!conn) return;
+    var now = WC.now();
+    var diff = WC.time.offsetMinutes(now, conn.b) - WC.time.offsetMinutes(now, conn.a);
+    chipEl.innerHTML = "";
+    var span = document.createElement("span");
+    span.textContent = connName(conn.a).toUpperCase() + " → " +
+      connName(conn.b).toUpperCase() + " " + WC.time.deltaLabel(diff);
+    var pa = WC.time.parts(now, conn.a), pb = WC.time.parts(now, conn.b);
+    chipEl.title = connName(conn.a) + " " + pa.hh + ":" + pa.mm + " · " +
+      connName(conn.b) + " " + pb.hh + ":" + pb.mm;
+    var x = document.createElement("button");
+    x.className = "conn-x";
+    x.setAttribute("aria-label", "Clear measurement");
+    x.textContent = "×";
+    x.addEventListener("click", function () { WC.map.clearConnector(); });
+    chipEl.appendChild(span);
+    chipEl.appendChild(x);
+    chipEl.hidden = false;
+    var A = WC.ZONES[conn.a], B = WC.ZONES[conn.b];
+    var r = svg.getBoundingClientRect();
+    var hostR = svg.parentNode.getBoundingClientRect();
+    var mx = ((px(A[1]) + px(B[1])) / 2) / W * r.width + (r.left - hostR.left);
+    var my = ((py(A[0]) + py(B[0])) / 2) / H * r.height + (r.top - hostR.top);
+    chipEl.style.left = mx + "px";
+    chipEl.style.top = my + "px";
   }
 
   var lastMinute = -1;
@@ -158,6 +259,12 @@
       var info = document.getElementById("map-sun-info");
       if (info) info.textContent =
         "SUN " + ss.lat.toFixed(1) + "°, " + ss.lon.toFixed(1) + "°";
+      if (conn) updateChip();
+    },
+    clearConnector: function () {
+      conn = null;
+      if (connEl) connEl.innerHTML = "";
+      if (chipEl) chipEl.hidden = true;
     }
   };
 

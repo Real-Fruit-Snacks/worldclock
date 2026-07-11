@@ -60,6 +60,19 @@
     }
   };
 
+  WC.nearestZone = function (lat, lon) {
+    var RAD = Math.PI / 180, best = null, bestD = Infinity;
+    var sinLat = Math.sin(lat * RAD), cosLat = Math.cos(lat * RAD);
+    for (var zone in WC.ZONES) {
+      var c = WC.ZONES[zone];
+      var d = Math.acos(Math.max(-1, Math.min(1,
+        sinLat * Math.sin(c[0] * RAD) +
+        cosLat * Math.cos(c[0] * RAD) * Math.cos((lon - c[1]) * RAD))));
+      if (d < bestD) { bestD = d; best = zone; }
+    }
+    return best ? { zone: best, lat: WC.ZONES[best][0], lon: WC.ZONES[best][1], deg: bestD * 180 / Math.PI } : null;
+  };
+
   /* ---------- UI (only on index.html) ---------- */
   if (!document.getElementById("clock-grid")) return;
 
@@ -141,7 +154,7 @@
   }
   document.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === "Escape") { toggleHelp(false); toggleKiosk(false); return; }
+    if (e.key === "Escape") { if (WC.map && WC.map.clearConnector) WC.map.clearConnector(); toggleHelp(false); toggleKiosk(false); return; }
     if (typing(e)) return;
     switch (e.key) {
       case "/": e.preventDefault(); document.getElementById("btn-add").click(); break;

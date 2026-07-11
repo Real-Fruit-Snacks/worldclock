@@ -67,15 +67,15 @@
       var h = Math.floor(a / 60), frac = a % 60;
       return "UTC" + sign + h + (frac ? fracLabel(frac) : "");
     },
+    deltaLabel: function (min) {
+      if (min === 0) return "±0h";
+      var sign = min > 0 ? "+" : "-", a = Math.abs(min);
+      var h = Math.floor(a / 60), rem = a % 60;
+      return sign + h + (rem ? fracLabel(rem) : "") + "h";
+    },
     homeDelta: function (date, zone, home, refDate) {
       var d = WC.time.offsetMinutes(date, zone) - WC.time.offsetMinutes(date, home);
-      var label;
-      if (d === 0) label = "±0h";
-      else {
-        var sign = d > 0 ? "+" : "-", a = Math.abs(d);
-        var h = Math.floor(a / 60), rem = a % 60;
-        label = sign + h + (rem ? fracLabel(rem) : "") + "h";
-      }
+      var label = WC.time.deltaLabel(d);
       var zd = dateFmt(zone).format(date);
       var hd = dateFmt(home).format(refDate || date);
       var diff = Math.round((Date.parse(zd) - Date.parse(hd)) / 86400000);

@@ -236,6 +236,23 @@ T("nicknames", function () {
   assertEq(WC.prefs.get("wc-names", null), null, "empty names removes the key");
   WC.prefs.remove("wc-names");
 });
+T("nearest zone snap", function () {
+  assertEq(WC.nearestZone(35.65, 139.74).zone, "Asia/Tokyo", "Tokyo coords snap to Tokyo");
+  assertEq(WC.nearestZone(41, -75).zone, "America/New_York", "upstate PA snaps to New York");
+  var mid = WC.nearestZone(0, -30);
+  /* deviation from brief: actual nearest zone is America/Noronha at ~4.55 deg
+     (brief assumed >5 deg; this repo's ZONES includes that Atlantic island
+     city, so the real distance is smaller). Threshold lowered to match
+     verified ground truth while still asserting real separation. */
+  assert(!!mid && typeof mid.zone === "string" && mid.deg > 4, "open ocean returns a real zone with distance");
+});
+T("delta label", function () {
+  assertEq(WC.time.deltaLabel(0), "±0h", "zero");
+  assertEq(WC.time.deltaLabel(540), "+9h", "+9h");
+  assertEq(WC.time.deltaLabel(-210), "-3.5h", "-3.5h");
+  var d = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
+  assertEq(WC.time.homeDelta(d, "Asia/Tokyo", "America/New_York").label, WC.time.deltaLabel(840), "homeDelta uses deltaLabel");
+});
 </script>
 </body>
 </html>
