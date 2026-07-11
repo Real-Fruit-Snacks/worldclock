@@ -39,6 +39,26 @@
     }
   };
 
+  WC.names = {
+    all: function () {
+      try { return JSON.parse(WC.prefs.get("wc-names", "{}")) || {}; }
+      catch (e) { return {}; }
+    },
+    get: function (zone) {
+      var n = WC.names.all()[zone];
+      return n ? n : null;
+    },
+    set: function (zone, name) {
+      var all = WC.names.all();
+      name = String(name || "").trim().slice(0, 24);
+      if (name) all[zone] = name; else delete all[zone];
+      WC.prefs.set("wc-names", JSON.stringify(all));  /* fires wc:prefs -> re-render */
+    },
+    display: function (zone) {
+      return WC.names.get(zone) || (zone === "UTC" ? "UTC" : WC.cityName(zone));
+    }
+  };
+
   /* ---------- UI (only on index.html) ---------- */
   if (!document.getElementById("clock-grid")) return;
 
@@ -182,6 +202,59 @@
     copyText(location.origin === "null" ? currentShareHash() : location.href.split("#")[0] + currentShareHash(), function () {
       btn.textContent = "COPIED";
       setTimeout(function () { btn.textContent = "COPY LINK"; }, 1500);
+    });
+  });
+
+  /* ---------- nicknames (dblclick a card title) ---------- */
+  if (Object.keys(WC.names.all()).length) WC.clocks.render();
+
+  document.getElementById("clock-grid").addEventListener("dblclick", function (e) {
+    var city = e.target.closest ? e.target.closest(".card-city") : null;
+    if (!city) return;
+    var card = city.closest(".clock-card");
+    var zone = card.getAttribute("data-zone");
+    var inp = document.createElement("input");
+    inp.type = "text"; inp.className = "card-name-input mono";
+    inp.maxLength = 24;
+    inp.value = WC.names.get(zone) || "";
+    inp.placeholder = zone === "UTC" ? "UTC" : WC.cityName(zone);
+    inp.setAttribute("aria-label", "Nickname for " + zone);
+    city.replaceWith(inp);
+    inp.focus(); inp.select();
+    var doneEditing = false;
+    function commit() {
+      if (doneEditing) return;
+      doneEditing = true;
+      WC.names.set(zone, inp.value);   /* fires wc:prefs -> full re-render */
+    }
+    inp.addEventListener("keydown", function (ev) {
+      ev.stopPropagation();            /* keep global shortcuts quiet */
+      if (ev.key === "Enter") commit();
+      else if (ev.key === "Escape") { doneEditing = true; WC.clocks.render(); }
+    });
+    inp.addEventListener("blur", commit);
+  });
+
+  /* ---------- click a time to copy it ---------- */
+  document.getElementById("clock-grid").addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest(".card-time") : null;
+    if (!t) return;
+    var card = t.closest(".clock-card");
+    var zone = card.getAttribute("data-zone");
+    var p = WC.time.parts(WC.now(), zone);
+    var h24 = WC.prefs.get("wc-hours", "24") === "24";
+    var time = h24 ? p.hh + ":" + p.mm
+      : WC.time.format12(p.h).h12 + ":" + p.mm + " " + WC.time.format12(p.h).ampm;
+    var text = WC.names.display(zone) + " · " + time + " · " +
+      WC.time.offsetLabel(WC.time.offsetMinutes(WC.now(), zone));
+    copyText(text, function () {
+      var old = card.querySelector(".copy-flash");
+      if (old) old.parentNode.removeChild(old);
+      var flash = document.createElement("span");
+      flash.className = "copy-flash mono";
+      flash.textContent = "copied";
+      card.appendChild(flash);
+      setTimeout(function () { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 1400);
     });
   });
 })();

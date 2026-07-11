@@ -455,3 +455,20 @@ main {
 @keyframes kiosk-hint-fade {
   0% { opacity: 0; } 12%, 78% { opacity: 1; } 100% { opacity: 0; }
 }
+
+/* --- nicknames + copy --- */
+.card-name-input {
+  width: 110px; padding: 1px 4px;
+  background: var(--twb-bg-2); border: 1px solid var(--twb-accent);
+  border-radius: var(--twb-radius-s); color: var(--twb-text-normal);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.card-time { cursor: pointer; }
+.card-time:hover { color: var(--twb-accent); }
+.copy-flash {
+  position: absolute; top: 30px; right: 8px;
+  padding: 1px 7px; font-size: 10px; letter-spacing: 0.06em;
+  background: var(--twb-tag-bg); border: 1px solid var(--twb-tag-border);
+  border-radius: var(--twb-radius-s); color: var(--twb-accent);
+  animation: kiosk-hint-fade 1.4s ease forwards;
+}

@@ -179,7 +179,7 @@
   function cardHTML(zone, isHome, date) {
     var p = WC.time.parts(date, zone);
     var off = WC.time.offsetMinutes(date, zone);
-    var name = zone === "UTC" ? "UTC" : WC.cityName(zone);
+    var name = (WC.names && WC.names.display) ? WC.names.display(zone) : (zone === "UTC" ? "UTC" : WC.cityName(zone));
     var html = '<article class="clock-card' + (isHome ? " clock-card-home" : "") +
       '" data-zone="' + zone + '" draggable="' + (isHome ? "false" : "true") + '">' +
       '<div class="card-top"><span class="card-city" title="' + zone + '">' + name + "</span>" +
