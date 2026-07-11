@@ -51,6 +51,29 @@ T("harness sanity", function () {
   assert(true, "true is true");
   assert(approx(1.05, 1.0, 0.1), "approx works");
 });
+T("zones table", function () {
+  assert(typeof WC === "object", "WC namespace exists");
+  var n = Object.keys(WC.ZONES).length;
+  assert(n > 400, "zone table has >400 entries, got " + n);
+  var ny = WC.ZONES["America/New_York"];
+  assert(ny && approx(ny[0], 40.71, 0.3) && approx(ny[1], -74.01, 0.3),
+    "New York coords ~ (40.71, -74.01), got " + JSON.stringify(ny));
+  var tk = WC.ZONES["Asia/Tokyo"];
+  assert(tk && approx(tk[0], 35.65, 0.3) && approx(tk[1], 139.74, 0.3),
+    "Tokyo coords ~ (35.65, 139.74), got " + JSON.stringify(tk));
+});
+T("aliases and curated", function () {
+  assertEq(WC.ALIASES["nyc"], "America/New_York", "nyc alias");
+  assertEq(WC.ALIASES["la"], "America/Los_Angeles", "la alias");
+  for (var i = 0; i < WC.SUGGESTED.length; i++) {
+    var z = WC.SUGGESTED[i];
+    assert(z === "UTC" || WC.ZONES[z], "suggested zone in table: " + z);
+  }
+  assert(WC.DEFAULT_ZONES.indexOf("UTC") > -1, "defaults include UTC");
+  assertEq(WC.cityName("America/New_York"), "New York", "cityName strips region + underscores");
+  assertEq(WC.cityName("UTC"), "UTC", "cityName passes UTC through");
+  assert(WC.allZones().length >= Object.keys(WC.ZONES).length - 5, "allZones covers table");
+});
 </script>
 </body>
 </html>
