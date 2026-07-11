@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>worldclock tests</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+body { background: var(--twb-bg-0); color: var(--twb-text-normal);
+  font-family: var(--twb-font-mono); font-size: 13px; padding: 16px; }
+#summary { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.pass { color: var(--twb-accent); } .fail { color: var(--twb-red); }
+div { margin: 2px 0; }
+</style>
+</head>
+<body>
+<div id="summary">running…</div>
+<div id="log"></div>
+<script src="js/zones.js"></script>
+<script src="js/data.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/clocks.js"></script>
+<script src="js/mapdata.js"></script>
+<script src="js/map.js"></script>
+<script>
+var _tests = [], _pass = 0, _fail = 0;
+function T(name, fn) { _tests.push([name, fn]); }
+function log(cls, msg) {
+  var d = document.createElement("div");
+  d.className = cls; d.textContent = msg;
+  document.getElementById("log").appendChild(d);
+}
+function assert(cond, msg) {
+  if (cond) { _pass++; }
+  else { _fail++; log("fail", "FAIL: " + msg); }
+}
+function assertEq(a, b, msg) {
+  assert(a === b, msg + " (got " + JSON.stringify(a) + ", want " + JSON.stringify(b) + ")");
+}
+function approx(a, b, tol) { return Math.abs(a - b) <= tol; }
+window.addEventListener("load", function () {
+  for (var i = 0; i < _tests.length; i++) {
+    try { _tests[i][1](); }
+    catch (e) { _fail++; log("fail", "ERROR in " + _tests[i][0] + ": " + e.message); }
+  }
+  var s = document.getElementById("summary");
+  s.textContent = "PASS " + _pass + " / FAIL " + _fail;
+  s.className = _fail ? "fail" : "pass";
+});
+/* === tests === */
+T("harness sanity", function () {
+  assert(true, "true is true");
+  assert(approx(1.05, 1.0, 0.1), "approx works");
+});
+</script>
+</body>
+</html>
