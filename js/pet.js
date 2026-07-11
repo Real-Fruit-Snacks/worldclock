@@ -6,7 +6,7 @@
   function petOn() { return root.getAttribute("data-pet") !== "off"; }
   function petMode() {
     var a = root.getAttribute("data-pet");
-    return a === "off" ? "off" : (a === "float" ? "float" : "cursor");
+    return a === "off" ? "off" : (a === "cursor" ? "cursor" : "float");
   }
   var tilt = pet.querySelector(".pet-tilt");
   var sprite = pet.querySelector(".pet-sprite");

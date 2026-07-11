@@ -11,8 +11,8 @@
 
   WC.prefs = {
     get: function (k, d) { var v = lsGet(k); return v === null ? d : v; },
-    set: function (k, v) { lsSet(k, String(v)); fire("wc:prefs"); },
-    remove: function (k) { lsDel(k); fire("wc:prefs"); },
+    set: function (k, v) { lsSet(k, String(v)); if (String(k).indexOf("wc-pet") !== 0) fire("wc:prefs"); },
+    remove: function (k) { lsDel(k); if (String(k).indexOf("wc-pet") !== 0) fire("wc:prefs"); },
     getZones: function () {
       var raw = lsGet("wc-zones");
       if (!raw) return null;
@@ -132,8 +132,7 @@
     var val = b.getAttribute("data-val");
     WC.prefs.set(key, val);
     if (key === "wc-pet") {
-      if (val === "cursor") document.documentElement.removeAttribute("data-pet");
-      else document.documentElement.setAttribute("data-pet", val);
+      document.documentElement.setAttribute("data-pet", val);
     }
     refreshPet();
     window.dispatchEvent(new Event("wc:pet"));
@@ -217,7 +216,7 @@
 
   function choose(zone) {
     if (pickingHome) {
-      WC.prefs.set("wc-home", zone);
+      lsSet("wc-home", String(zone));
       fire("wc:zones");
     } else {
       var zones = currentZones();

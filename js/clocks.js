@@ -107,6 +107,8 @@
 
   function loadState() {
     state.home = pref("wc-home", detectHome());
+    try { new Intl.DateTimeFormat("en-US", { timeZone: state.home }); }
+    catch (e) { console.warn("worldclock: invalid home zone, re-detecting", state.home); state.home = detectHome(); }
     var raw = pref("wc-zones", null);
     var zones = null;
     if (raw) { try { zones = JSON.parse(raw); } catch (e) { zones = null; } }
@@ -148,6 +150,13 @@
     return t;
   }
 
+  function chipsHTML(zone, date) {
+    var d = WC.time.homeDelta(date, zone, state.home);
+    return '<span class="chip chip-offset mono">' + d.label + "</span>" +
+      '<span class="chip mono ' + (d.dayRel === "today" ? "chip-today" : "chip-otherday") + '">' +
+      d.dayRel + "</span>";
+  }
+
   function cardHTML(zone, isHome, date) {
     var p = WC.time.parts(date, zone);
     var off = WC.time.offsetMinutes(date, zone);
@@ -162,11 +171,7 @@
       '<div class="card-time mono">' + timeText(p) + "</div>" +
       '<div class="card-zoneline mono">' + p.abbr + " &middot; " + WC.time.offsetLabel(off) + "</div>";
     if (!isHome) {
-      var d = WC.time.homeDelta(date, zone, state.home);
-      html += '<div class="card-chips">' +
-        '<span class="chip chip-offset mono">' + d.label + "</span>" +
-        '<span class="chip mono ' + (d.dayRel === "today" ? "chip-today" : "chip-otherday") + '">' +
-        d.dayRel + "</span></div>";
+      html += '<div class="card-chips">' + chipsHTML(zone, date) + "</div>";
     } else {
       html += '<div class="card-chips"><span class="chip chip-offset mono">your time</span></div>';
     }
@@ -195,10 +200,15 @@
       var cards = document.querySelectorAll(".clock-card");
       for (var i = 0; i < cards.length; i++) {
         var zone = cards[i].getAttribute("data-zone");
+        var isHome = cards[i].classList.contains("clock-card-home");
         var p = WC.time.parts(date, zone);
+        var off = WC.time.offsetMinutes(date, zone);
         cards[i].querySelector(".card-time").innerHTML = timeText(p);
         cards[i].querySelector(".card-date").textContent =
           p.weekday + ", " + p.month + " " + p.day;
+        cards[i].querySelector(".card-daynight").innerHTML = dayNightIcon(isDaylight(date, zone, p));
+        cards[i].querySelector(".card-zoneline").innerHTML = p.abbr + " &middot; " + WC.time.offsetLabel(off);
+        if (!isHome) cards[i].querySelector(".card-chips").innerHTML = chipsHTML(zone, date);
       }
       for (var j = 0; j < subscribers.length; j++) subscribers[j](date);
     }

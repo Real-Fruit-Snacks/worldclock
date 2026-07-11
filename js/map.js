@@ -109,7 +109,14 @@
     if (!t) { tipEl.setAttribute("hidden", ""); syncCards(null); return; }
     var zone = t.getAttribute("data-zone");
     var p = WC.time.parts(new Date(), zone);
-    tipEl.textContent = WC.cityName(zone) + " · " + p.hh + ":" + p.mm +
+    var timeStr;
+    if (WC.prefs.get("wc-hours", "24") === "12") {
+      var f = WC.time.format12(p.h);
+      timeStr = f.h12 + ":" + p.mm + " " + f.ampm;
+    } else {
+      timeStr = p.hh + ":" + p.mm;
+    }
+    tipEl.textContent = WC.cityName(zone) + " · " + timeStr +
       " · " + p.abbr;
     tipEl.removeAttribute("hidden");
     var host = document.getElementById("map-host").getBoundingClientRect();
