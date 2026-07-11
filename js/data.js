@@ -45,10 +45,18 @@
   };
 
   WC.allZones = function () {
+    var zones = [];
     if (typeof Intl.supportedValuesOf === "function") {
-      try { return Intl.supportedValuesOf("timeZone").concat(["UTC"]); }
+      try { zones = Intl.supportedValuesOf("timeZone"); }
       catch (e) { /* fall through */ }
     }
-    return Object.keys(WC.ZONES).concat(["UTC"]);
+    if (!zones.length) zones = Object.keys(WC.ZONES);
+    var seen = {};
+    for (var i = 0; i < zones.length; i++) seen[zones[i]] = 1;
+    var zoneKeys = Object.keys(WC.ZONES);
+    for (var j = 0; j < zoneKeys.length; j++)
+      if (!seen[zoneKeys[j]]) zones.push(zoneKeys[j]);
+    if (!seen["UTC"]) zones.push("UTC");
+    return zones;
   };
 })();

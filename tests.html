@@ -141,6 +141,23 @@ T("map data", function () {
   assert(WC.MAP_PATH.charAt(0) === "M", "path starts with M");
   assert(WC.MAP_PATH.indexOf("Z") > -1, "path has closed rings");
 });
+T("prefs round-trip", function () {
+  WC.prefs.set("wc-test-key", "hello");
+  assertEq(WC.prefs.get("wc-test-key", "x"), "hello", "set then get");
+  WC.prefs.remove("wc-test-key");
+  assertEq(WC.prefs.get("wc-test-key", "fallback"), "fallback", "removed -> default");
+});
+T("zone search", function () {
+  var r = WC.search("nyc");
+  assert(r.length > 0 && r[0].zone === "America/New_York", "alias nyc -> New_York first");
+  r = WC.search("tok");
+  assert(r.some(function (m) { return m.zone === "Asia/Tokyo"; }), "prefix tok finds Tokyo");
+  r = WC.search("LONDON");
+  assert(r.some(function (m) { return m.zone === "Europe/London"; }), "case-insensitive");
+  r = WC.search("kolk");
+  assert(r.some(function (m) { return m.zone === "Asia/Kolkata"; }), "kolk finds Kolkata");
+  assertEq(WC.search("zzzznothing").length, 0, "no junk matches");
+});
 </script>
 </body>
 </html>
