@@ -257,4 +257,30 @@
       setTimeout(function () { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 1400);
     });
   });
+
+  /* ---------- live title + day/night favicon (home zone) ---------- */
+  var FAV_DAY = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Crect%20width='16'%20height='16'%20rx='3'%20fill='%23090c0d'/%3E%3Cpath%20d='M3.5%2014.5%20V7%20Q3.5%202.5%208%202.5%20Q12.5%202.5%2012.5%207%20V14.5%20L11%2013.3%20L9.5%2014.5%20L8%2013.3%20L6.5%2014.5%20L5%2013.3%20Z'%20fill='%2363f2ab'/%3E%3Crect%20x='6'%20y='6.5'%20width='1.4'%20height='2.4'%20fill='%23090c0d'/%3E%3Crect%20x='8.8'%20y='6.5'%20width='1.4'%20height='2.4'%20fill='%23090c0d'/%3E%3C/svg%3E";
+  var FAV_NIGHT = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Crect%20width='16'%20height='16'%20rx='3'%20fill='%23090c0d'/%3E%3Cpath%20d='M3.5%2014.5%20V7%20Q3.5%202.5%208%202.5%20Q12.5%202.5%2012.5%207%20V14.5%20L11%2013.3%20L9.5%2014.5%20L8%2013.3%20L6.5%2014.5%20L5%2013.3%20Z'%20fill='%23b78cff'/%3E%3Crect%20x='5.6'%20y='7.6'%20width='2'%20height='1.2'%20fill='%23090c0d'/%3E%3Crect%20x='8.4'%20y='7.6'%20width='2'%20height='1.2'%20fill='%23090c0d'/%3E%3C/svg%3E";
+  var favLink = document.querySelector('link[rel="icon"]');
+  var lastAmbientMin = -1;
+  function homeIsDay(date) {
+    var home = WC.clocks.state().home;
+    var c = WC.ZONES && WC.ZONES[home];
+    if (c && WC.sun) return WC.sun.elevation(c[0], c[1], date) > -0.833;
+    var p = WC.time.parts(date, home);
+    return p.h >= 6 && p.h < 18;
+  }
+  function ambient(date) {
+    if (date.getMinutes() === lastAmbientMin) return;
+    lastAmbientMin = date.getMinutes();
+    var home = WC.clocks.state().home;
+    var p = WC.time.parts(date, home);
+    var h24 = WC.prefs.get("wc-hours", "24") === "24";
+    var t = h24 ? p.hh + ":" + p.mm
+      : WC.time.format12(p.h).h12 + ":" + p.mm + " " + WC.time.format12(p.h).ampm;
+    document.title = t + " — World Clock";
+    if (favLink) favLink.href = homeIsDay(date) ? FAV_DAY : FAV_NIGHT;
+  }
+  WC.onSecond(ambient);
+  ambient(WC.now());
 })();

@@ -201,6 +201,9 @@
       '<div class="card-time mono">' + timeText(p) + "</div>" +
       '<div class="card-zoneline mono">' + p.abbr + " &middot; " + WC.time.offsetLabel(off) + "</div>";
     html += '<div class="card-chips">' + chipsHTML(zone, date, isHome) + "</div>";
+    var dayPct = ((p.h + p.m / 60) / 24 * 100).toFixed(1);
+    html += '<div class="card-daybar" aria-hidden="true"><span class="daybar-work"></span>' +
+      '<span class="daybar-now" style="left:' + dayPct + '%"></span></div>';
     html += '<div class="card-date mono">' + p.weekday + ", " + p.month + " " + p.day + "</div></article>";
     return html;
   }
@@ -235,6 +238,8 @@
         cards[i].querySelector(".card-daynight").innerHTML = dayNightIcon(isDaylight(date, zone, p));
         cards[i].querySelector(".card-zoneline").innerHTML = p.abbr + " &middot; " + WC.time.offsetLabel(off);
         cards[i].querySelector(".card-chips").innerHTML = chipsHTML(zone, date, isHome);
+        var bar = cards[i].querySelector(".daybar-now");
+        if (bar) bar.style.left = ((p.h + p.m / 60) / 24 * 100).toFixed(1) + "%";
       }
       for (var j = 0; j < subscribers.length; j++) subscribers[j](date);
     }

@@ -472,3 +472,18 @@ main {
   border-radius: var(--twb-radius-s); color: var(--twb-accent);
   animation: kiosk-hint-fade 1.4s ease forwards;
 }
+
+/* --- waking-hours bar (09:00-17:00 band, marker = local now) --- */
+.card-daybar {
+  position: relative; height: 3px; margin-top: 8px;
+  background: var(--twb-bg-3); border-radius: 2px;
+}
+.daybar-work {
+  position: absolute; top: 0; bottom: 0;
+  left: 37.5%; width: 33.333%;                /* 09:00 .. 17:00 of a 24h track */
+  background: var(--twb-tag-bg); border-radius: 2px;
+}
+.daybar-now {
+  position: absolute; top: -2px; width: 2px; height: 7px;
+  background: var(--twb-accent); border-radius: 1px;
+}
