@@ -209,6 +209,8 @@ T("share hash codec", function () {
   assertEq(junk.zones.join("|"), "Asia/Tokyo", "invalid zones dropped");
   assertEq(WC.share.decode("#foo=bar"), null, "no z= -> null");
   assertEq(WC.share.decode(""), null, "empty -> null");
+  assertEq(WC.share.decode("#z=%").zones.length, 0, "malformed percent yields no zones, no throw");
+  assertEq(WC.share.decode("#z=Asia%2FTokyo,%").zones.join("|"), "Asia/Tokyo", "good zones survive a bad component");
 });
 </script>
 </body>

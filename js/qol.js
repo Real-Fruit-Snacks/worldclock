@@ -28,11 +28,12 @@
       if (!hash) return null;
       var m = /[#&]z=([^&]*)/.exec(hash);
       if (!m) return null;
-      var zones = m[1].split(",").map(decodeURIComponent).filter(function (z) {
+      function dec(s) { try { return decodeURIComponent(s); } catch (e) { return null; } }
+      var zones = m[1].split(",").map(dec).filter(function (z) {
         return z && validZone(z);
       });
       var hm = /[#&]h=([^&]*)/.exec(hash);
-      var home = hm ? decodeURIComponent(hm[1]) : null;
+      var home = hm ? dec(hm[1]) : null;
       if (home && !validZone(home)) home = null;
       return { zones: zones, home: home };
     }
