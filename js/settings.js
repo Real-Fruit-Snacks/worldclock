@@ -216,4 +216,43 @@
     var i = zones.indexOf(zone);
     if (i > -1) { zones.splice(i, 1); WC.prefs.setZones(zones); }
   });
+
+  /* ---------- drag to reorder ---------- */
+  var dragZone = null;
+  var grid = document.getElementById("clock-grid");
+  grid.addEventListener("dragstart", function (e) {
+    var card = e.target.closest ? e.target.closest(".clock-card") : null;
+    if (!card || card.classList.contains("clock-card-home")) return;
+    dragZone = card.getAttribute("data-zone");
+    card.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", dragZone); } catch (err) {}
+  });
+  grid.addEventListener("dragend", function () {
+    dragZone = null;
+    var cards = grid.querySelectorAll(".clock-card");
+    for (var i = 0; i < cards.length; i++) cards[i].classList.remove("dragging", "drag-over");
+  });
+  grid.addEventListener("dragover", function (e) {
+    var card = e.target.closest ? e.target.closest(".clock-card") : null;
+    if (!card || !dragZone || card.classList.contains("clock-card-home")) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    var cards = grid.querySelectorAll(".clock-card");
+    for (var i = 0; i < cards.length; i++) cards[i].classList.remove("drag-over");
+    card.classList.add("drag-over");
+  });
+  grid.addEventListener("drop", function (e) {
+    var card = e.target.closest ? e.target.closest(".clock-card") : null;
+    if (!card || !dragZone) return;
+    e.preventDefault();
+    var target = card.getAttribute("data-zone");
+    if (target === dragZone) return;
+    var zones = currentZones();
+    var from = zones.indexOf(dragZone), to = zones.indexOf(target);
+    if (from === -1 || to === -1) return;
+    zones.splice(from, 1);
+    zones.splice(to, 0, dragZone);
+    WC.prefs.setZones(zones);
+  });
 })();
