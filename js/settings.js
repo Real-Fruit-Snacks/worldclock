@@ -88,6 +88,67 @@
       "</span>" + controlHTML + "</div>";
   }
 
+  /* ---------- pet settings ---------- */
+  document.getElementById("pet-settings").innerHTML =
+    '<div class="panel-header pet-header"><span class="manifest-label">PET</span></div>' +
+    settingRow("MODE", '<span class="seg" data-petpref="wc-pet">' +
+      '<button data-val="float">FLOAT</button><button data-val="cursor">CURSOR</button>' +
+      '<button data-val="off">OFF</button></span>') +
+    settingRow("SIZE", '<input type="range" id="pet-size" min="16" max="64" step="2">') +
+    settingRow("OPACITY", '<input type="range" id="pet-opacity" min="15" max="100" step="5">') +
+    settingRow("NAP", petToggle("wc-pet-nap")) +
+    settingRow("FLEE", petToggle("wc-pet-flee")) +
+    settingRow("READ", petToggle("wc-pet-read")) +
+    settingRow("TRICKS", petToggle("wc-pet-tricks")) +
+    settingRow("SPEECH", petToggle("wc-pet-speech"));
+
+  function petToggle(key) {
+    return '<span class="seg" data-petpref="' + key + '">' +
+      '<button data-val="on">ON</button><button data-val="off">OFF</button></span>';
+  }
+
+  function petDefaults(key) {
+    return { "wc-pet": "float", "wc-pet-nap": "on", "wc-pet-flee": "on",
+      "wc-pet-read": "on", "wc-pet-tricks": "on", "wc-pet-speech": "off" }[key];
+  }
+
+  function refreshPet() {
+    var segs = panel.querySelectorAll("[data-petpref]");
+    for (var i = 0; i < segs.length; i++) {
+      var key = segs[i].getAttribute("data-petpref");
+      var cur = WC.prefs.get(key, petDefaults(key));
+      var btns = segs[i].querySelectorAll("button");
+      for (var j = 0; j < btns.length; j++)
+        btns[j].classList.toggle("seg-active", btns[j].getAttribute("data-val") === cur);
+    }
+    document.getElementById("pet-size").value = WC.prefs.get("wc-pet-size", "28");
+    document.getElementById("pet-opacity").value = WC.prefs.get("wc-pet-opacity", "70");
+  }
+
+  panel.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-petpref] button") : null;
+    if (!b) return;
+    var key = b.parentNode.getAttribute("data-petpref");
+    var val = b.getAttribute("data-val");
+    WC.prefs.set(key, val);
+    if (key === "wc-pet") {
+      if (val === "cursor") document.documentElement.removeAttribute("data-pet");
+      else document.documentElement.setAttribute("data-pet", val);
+    }
+    refreshPet();
+    window.dispatchEvent(new Event("wc:pet"));
+  });
+  document.getElementById("pet-size").addEventListener("input", function () {
+    WC.prefs.set("wc-pet-size", this.value);
+    document.documentElement.style.setProperty("--pet-size", this.value + "px");
+    window.dispatchEvent(new Event("wc:pet"));
+  });
+  document.getElementById("pet-opacity").addEventListener("input", function () {
+    WC.prefs.set("wc-pet-opacity", this.value);
+    document.documentElement.style.setProperty("--pet-base-opacity", (this.value / 100).toFixed(3));
+    window.dispatchEvent(new Event("wc:pet"));
+  });
+
   function refreshSeg() {
     var segs = panel.querySelectorAll(".seg");
     for (var i = 0; i < segs.length; i++) {
@@ -121,6 +182,7 @@
   document.getElementById("btn-settings").addEventListener("click", function () {
     panel.classList.toggle("open");
     refreshSeg();
+    refreshPet();
   });
   document.getElementById("settings-close").addEventListener("click", function () {
     panel.classList.remove("open");
