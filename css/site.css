@@ -1,0 +1,79 @@
+/* World Clock — components. All colors via --twb-* tokens (tokens.css). */
+
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--twb-bg-0); color: var(--twb-text-normal);
+  font-family: var(--twb-font-ui); line-height: var(--twb-line-height-tight);
+  font-size: 15px;
+  display: flex; flex-direction: column;
+}
+.mono { font-family: var(--twb-font-mono); }
+::selection { background: var(--twb-selection); }
+
+/* Accent choice: remap --twb-accent onto another token (works in both modes;
+   color-mix tints re-derive automatically where supported). */
+:root[data-accent="1"] { --twb-accent: var(--twb-accent-alt); }
+:root[data-accent="2"] { --twb-accent: var(--twb-warm); }
+:root[data-accent="3"] { --twb-accent: var(--twb-violet); }
+:root[data-accent="4"] { --twb-accent: var(--twb-orange); }
+:root[data-accent="5"] { --twb-accent: var(--twb-red); }
+
+/* manifest label idiom */
+.manifest-label {
+  font-family: var(--twb-font-mono); font-size: 10.5px; font-weight: 650;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--twb-text-muted);
+}
+
+/* --- topbar --- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 16px; height: 48px;
+  background: var(--twb-bg-1); border-bottom: 1px solid var(--twb-border);
+}
+.site-title { color: var(--twb-accent); font-size: 12px; }
+.topbar-utc { margin-left: auto; display: flex; align-items: baseline; gap: 6px; }
+#utc-clock { font-size: 13px; color: var(--twb-text-soft); }
+.topbar-actions { display: flex; gap: 4px; }
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0;
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--twb-radius-s); color: var(--twb-text-muted);
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--twb-bg-3); color: var(--twb-text-normal); }
+.icon-btn:focus-visible {
+  outline: 2px solid var(--twb-focus-ring); outline-offset: 1px;
+  border-color: var(--twb-accent);
+}
+
+/* --- layout --- */
+main {
+  width: 100%; max-width: 1200px; margin: 0 auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 16px; flex: 1;
+}
+.panel {
+  background: var(--twb-bg-1); border: 1px solid var(--twb-border);
+  border-radius: var(--twb-radius-m); overflow: hidden;
+}
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid var(--twb-border);
+}
+
+/* --- footer --- */
+.footer {
+  display: flex; justify-content: center; gap: 18px;
+  padding: 14px; border-top: 1px solid var(--twb-border);
+  font-size: 11px; color: var(--twb-text-faint);
+}
+.footer a { color: var(--twb-text-faint); }
+.footer a:hover { color: var(--twb-accent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .icon-btn, .footer a { transition: background var(--twb-transition), color var(--twb-transition); }
+}
