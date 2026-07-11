@@ -86,6 +86,7 @@
     var compact = WC.time.deltaLabel(diff).toUpperCase();
     return {
       left: left, right: right,
+      leftName: name(left), rightName: name(right),
       text: name(left) + " " + compact + " " + name(right),
       compact: compact,
       flow: diff > 0 ? 1 : (diff < 0 ? -1 : 0)

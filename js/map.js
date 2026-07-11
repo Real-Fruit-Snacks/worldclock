@@ -231,8 +231,8 @@
       g.appendChild(text);
       var pa = WC.time.parts(now, L.left), pb = WC.time.parts(now, L.right);
       var title = el("title", {});
-      title.textContent = L.text.split(" ")[0] + " " + pa.hh + ":" + pa.mm +
-        " · " + L.text.split(" ").pop() + " " + pb.hh + ":" + pb.mm;
+      title.textContent = L.leftName + " " + pa.hh + ":" + pa.mm +
+        " · " + L.rightName + " " + pb.hh + ":" + pb.mm;
       g.appendChild(title);
       connEl.appendChild(g);
     }

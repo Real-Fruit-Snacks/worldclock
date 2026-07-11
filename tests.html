@@ -265,6 +265,7 @@ T("connector label", function () {
   assertEq(s.flow, 1, "Sydney later in January");
   var u = WC.connLabel("UTC", "Etc/GMT", d);
   assertEq(u.flow, 0, "equal zones do not flow");
+  assertEq(WC.connLabel("America/New_York", "Asia/Tokyo", d).leftName, "NEW YORK", "multi-word names survive");
 });
 </script>
 </body>
