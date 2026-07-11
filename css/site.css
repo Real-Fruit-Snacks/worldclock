@@ -3,7 +3,7 @@
 * { box-sizing: border-box; }
 html { height: 100%; }
 body {
-  margin: 0; min-height: 100%;
+  margin: 0; height: 100vh; overflow: hidden;
   background: var(--twb-bg-0); color: var(--twb-text-normal);
   font-family: var(--twb-font-ui); line-height: var(--twb-line-height-tight);
   font-size: 15px;
@@ -38,6 +38,7 @@ body {
 .topbar-utc { margin-left: auto; display: flex; align-items: baseline; gap: 6px; }
 #utc-clock { font-size: 13px; color: var(--twb-text-soft); }
 .topbar-actions { display: flex; gap: 4px; }
+@media (max-width: 420px) { .topbar-utc .manifest-label { display: none; } }
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 30px; height: 30px; padding: 0;
@@ -54,7 +55,7 @@ body {
 /* --- layout --- */
 main {
   width: 100%; max-width: 1200px; margin: 0 auto; padding: 16px;
-  display: flex; flex-direction: column; gap: 16px; flex: 1;
+  display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0;
 }
 .panel {
   background: var(--twb-bg-1); border: 1px solid var(--twb-border);
@@ -80,8 +81,9 @@ main {
 
 /* --- clock cards --- */
 .clock-grid {
-  display: grid; gap: 12px;
+  display: grid; gap: 12px; align-content: start;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  overflow-y: auto; min-height: 140px; padding-bottom: 4px;
 }
 .clock-card {
   position: relative;
@@ -107,6 +109,7 @@ main {
 }
 .clock-card:hover .card-remove, .card-remove:focus-visible { opacity: 1; }
 .card-remove:hover { background: var(--twb-bg-3); color: var(--twb-red); }
+.card-remove:focus-visible { outline: 2px solid var(--twb-focus-ring); outline-offset: 1px; }
 .clock-card:has(.card-remove) .card-daynight { margin-right: 14px; }
 .card-time { font-size: 27px; color: var(--twb-text-normal); margin: 6px 0 2px; }
 .card-ampm { font-size: 12px; color: var(--twb-text-muted); margin-left: 5px; }
@@ -133,7 +136,14 @@ main {
 .clock-card.drag-over { border-color: var(--twb-accent); }
 
 /* --- map --- */
+.map-panel { flex-shrink: 0; }
 #map-host { position: relative; }
+/* Cap the map's height so it can't crowd the pinned grid down past the
+   footer on short viewports (e.g. 1280x800 laptops) as well as narrow
+   ones — the aspect-locked SVG otherwise grows with container width alone. */
+@media (max-width: 900px), (max-height: 820px) {
+  #map-host svg { max-height: 40vh; }
+}
 .worldmap { display: block; width: 100%; height: auto; background: var(--twb-bg-0); }
 .map-graticule line { stroke: var(--twb-border); stroke-width: 0.5; opacity: 0.35; }
 .map-land { fill: var(--twb-bg-4); stroke: var(--twb-border-strong); stroke-width: 0.5; }
@@ -218,6 +228,9 @@ main {
 .zone-id { color: var(--twb-text-faint); font-size: 11px; }
 .zone-empty { padding: 10px 12px; font-size: 11px; color: var(--twb-text-faint); }
 /* --- site pet (site.config.json: pet_enabled) --- */
+/* MODE=off: pet.js stops animating it, but the element itself isn't
+   otherwise removed — hide it outright so it doesn't sit frozen on screen. */
+:root[data-pet="off"] #site-pet { display: none; }
 #site-pet {
   position: fixed; left: 0; top: 0;
   width: var(--pet-size, 28px); height: var(--pet-size, 28px);
@@ -329,3 +342,55 @@ main {
 .pet-header { padding: 8px 0 2px; border-bottom: 1px solid var(--twb-border); margin-top: 4px; }
 #pet-settings { display: flex; flex-direction: column; gap: 12px; }
 #pet-settings input[type="range"] { width: 140px; accent-color: var(--twb-accent); }
+
+/* --- scrollbars (per THEME-SPEC; ported from the vault repo) --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--twb-border-strong) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: var(--twb-border-strong);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--twb-text-faint); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* --- Step 1b theming coverage gaps --- */
+#add-search::placeholder { color: var(--twb-text-faint); }
+
+/* Range sliders: themed thumb/track (accent-color covers most browsers;
+   explicit styling for full cross-browser + high-contrast track look). */
+#pet-settings input[type="range"] {
+  height: 4px; border-radius: var(--twb-radius-pill);
+  background: var(--twb-bg-3); outline: none;
+}
+#pet-settings input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: var(--twb-radius-pill); background: var(--twb-bg-3);
+}
+#pet-settings input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; margin-top: -5px;
+  border-radius: 50%; background: var(--twb-accent);
+  border: 2px solid var(--twb-bg-1); cursor: pointer;
+}
+#pet-settings input[type="range"]::-moz-range-track {
+  height: 4px; border-radius: var(--twb-radius-pill); background: var(--twb-bg-3);
+}
+#pet-settings input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--twb-accent); border: 2px solid var(--twb-bg-1); cursor: pointer;
+}
+#pet-settings input[type="range"]:focus-visible {
+  outline: 2px solid var(--twb-focus-ring); outline-offset: 2px;
+}
+
+/* Focus-visible rings on remaining interactive surfaces */
+.seg button:focus-visible,
+.zone-row:focus-visible,
+.text-btn:focus-visible {
+  outline: 2px solid var(--twb-focus-ring); outline-offset: -2px;
+}

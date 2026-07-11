@@ -91,7 +91,7 @@
     tipEl.setAttribute("hidden", "");
     host.appendChild(tipEl);
     host.addEventListener("mousemove", onHover);
-    host.addEventListener("mouseleave", function () { tipEl.setAttribute("hidden", ""); });
+    host.addEventListener("mouseleave", function () { tipEl.setAttribute("hidden", ""); syncCards(null); });
   }
 
   function markerHTML(zone, home) {

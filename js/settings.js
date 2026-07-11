@@ -150,7 +150,7 @@
   });
 
   function refreshSeg() {
-    var segs = panel.querySelectorAll(".seg");
+    var segs = panel.querySelectorAll(".seg[data-pref]"); /* excludes pet rows (data-petpref) */
     for (var i = 0; i < segs.length; i++) {
       var key = segs[i].getAttribute("data-pref");
       var defaults = { "wc-hours": "24", "wc-seconds": "on", "wc-theme": "system", "wc-accent": "0" };
