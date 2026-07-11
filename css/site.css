@@ -143,7 +143,10 @@ main {
    footer on short viewports (e.g. 1280x800 laptops) as well as narrow
    ones — the aspect-locked SVG otherwise grows with container width alone. */
 @media (max-width: 900px), (max-height: 820px) {
-  #map-host svg { max-height: 40vh; }
+  /* max-width = 2 x max-height keeps the element box at the viewBox's 2:1
+     aspect whichever cap binds — otherwise preserveAspectRatio letterboxes
+     the drawing and screen<->lat/lon math (connector, chip midpoint) skews. */
+  #map-host svg { max-height: 40vh; max-width: 80vh; margin: 0 auto; }
 }
 .worldmap { display: block; width: 100%; height: auto; background: var(--twb-bg-0); }
 .map-graticule line { stroke: var(--twb-border); stroke-width: 0.5; opacity: 0.35; }
