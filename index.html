@@ -6,6 +6,8 @@
 <title>World Clock</title>
 <meta name="description" content="Offline world clock — timezones, day/night map, no network required.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Crect%20width='16'%20height='16'%20rx='3'%20fill='%23090c0d'/%3E%3Cpath%20d='M3.5%2014.5%20V7%20Q3.5%202.5%208%202.5%20Q12.5%202.5%2012.5%207%20V14.5%20L11%2013.3%20L9.5%2014.5%20L8%2013.3%20L6.5%2014.5%20L5%2013.3%20Z'%20fill='%2363f2ab'/%3E%3Crect%20x='6'%20y='6.5'%20width='1.4'%20height='2.4'%20fill='%23090c0d'/%3E%3Crect%20x='8.8'%20y='6.5'%20width='1.4'%20height='2.4'%20fill='%23090c0d'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1214">
 <script>(function(){try{
 var t=localStorage.getItem("wc-theme");
 if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);
@@ -65,5 +67,6 @@ if(po>=15&&po<=100)document.documentElement.style.setProperty("--pet-base-opacit
 <script src="js/map.js"></script>
 <script src="js/qol.js"></script>
 <script src="js/pet.js"></script>
+<script>if ("serviceWorker" in navigator && location.protocol !== "file:") { navigator.serviceWorker.register("sw.js"); }</script>
 </body>
 </html>

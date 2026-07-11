@@ -5,7 +5,7 @@ pages:
   image: alpine:latest
   script:
     - mkdir -p public
-    - cp -r index.html css js tests.html public/
+    - cp -r index.html css js tests.html manifest.webmanifest sw.js icons public/
   artifacts:
     paths:
       - public

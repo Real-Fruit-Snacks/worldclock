@@ -1,0 +1,15 @@
+{
+  "name": "World Clock",
+  "short_name": "World Clock",
+  "description": "Fully offline world clock with a live day/night map.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#090c0d",
+  "theme_color": "#0e1214",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

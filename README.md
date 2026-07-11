@@ -9,6 +9,7 @@
   <a href="https://real-fruit-snacks.github.io/worldclock/"><strong>Live site</strong></a> ·
   <a href="#features">Features</a> ·
   <a href="#run-it">Run it</a> ·
+  <a href="#keyboard">Keyboard</a> ·
   <a href="#host-it-yourself">Host it yourself</a> ·
   <a href="#development">Development</a>
 </p>
@@ -30,6 +31,15 @@ calm graphite surfaces, restrained ANSI accents, monospace manifest labels.
 - **Settings** — 12/24-hour, show/hide seconds, dark/light/system theme, six accent colors. Each setting is independent and stored in `localStorage` only.
 - **The ghost** — a little site pet, ported from [vault](https://github.com/Real-Fruit-Snacks/vault). It drifts, peeks at your cards, naps, and flees the cursor. Click it to recolor it. Cursor-follow and off modes, size/opacity sliders, and per-quirk toggles live in settings.
 - **Both themes, themed everywhere** — dark by default, light by preference or toggle; scrollbars, inputs, tooltips, and focus rings all follow the theme.
+- **Time scrubber** — drag the slider (or `←`/`→`) to preview any point ±24h from now across every card and the map at once; a RESET button appears whenever you've scrubbed away from the present.
+- **Keyboard shortcuts** — press `?` any time for a help overlay listing every shortcut.
+- **Card nicknames** — double-click a card's title to rename it; the nickname is saved and shown instead of the city name.
+- **Shareable links** — the URL hash always mirrors your current board, so copying the address bar (or the COPY LINK button in settings) hands someone your exact setup.
+- **Copy a time** — click any card's time to copy it to the clipboard.
+- **Waking-hours bar** — each card shows a strip marking your home timezone's typical waking hours against that city's clock, so you can tell "good time to call" at a glance.
+- **Kiosk mode** — press `f` to hide the chrome for a clean, wall-display view; `esc` (or `f` again) exits.
+- **Installable PWA** — add it to your home screen or desktop; a service worker caches everything on first visit so it keeps working fully offline afterward.
+- **Sort by time** — one topbar button reorders every card by current local time.
 
 ## Run it
 
@@ -42,6 +52,21 @@ python -m http.server 8000
 ```
 
 then visit http://localhost:8000.
+
+## Keyboard
+
+Press `?` in the app to bring up this same list at any time.
+
+| Key | Action |
+|---|---|
+| `/` | search timezones |
+| `s` | settings |
+| `t` | toggle theme |
+| `f` | kiosk mode |
+| `← →` | scrub time ±1h (shift: 15m) |
+| `n` | back to now |
+| `?` | this help |
+| `esc` | close / exit |
 
 ## Host it yourself
 
