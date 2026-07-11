@@ -36,7 +36,7 @@ calm graphite surfaces, restrained ANSI accents, monospace manifest labels.
 - **Card nicknames** — double-click a card's title to rename it; the nickname is saved and shown instead of the city name.
 - **Shareable links** — the URL hash always mirrors your current board, so copying the address bar (or the COPY LINK button in settings) hands someone your exact setup.
 - **Copy a time** — click any card's time to copy it to the clipboard.
-- **Waking-hours bar** — each card shows a strip marking your home timezone's typical waking hours against that city's clock, so you can tell "good time to call" at a glance.
+- **Waking-hours bar** — a thin strip on every card tracks that city's local day, with the 9-to-5 working window highlighted and a marker at their local now — "is it business hours there?" at a glance.
 - **Kiosk mode** — press `f` to hide the chrome for a clean, wall-display view; `esc` (or `f` again) exits.
 - **Installable PWA** — add it to your home screen or desktop; a service worker caches everything on first visit so it keeps working fully offline afterward.
 - **Sort by time** — one topbar button reorders every card by current local time.
@@ -95,9 +95,10 @@ Both generators are one-time tools; their inputs are vendored in `tools/referenc
 | `js/settings.js` | preference store (sole `localStorage` owner), settings panel, zone search |
 | `js/data.js` | aliases, curated suggestions, zone helpers |
 | `js/zones.js`, `js/mapdata.js` | generated data tables (committed) |
+| `js/qol.js` | time scrubber, shortcuts, sharing, nicknames, copy, kiosk, ambient title/favicon |
 | `js/pet.js` | the ghost |
 
-Plain scripts, one shared `WC` namespace, and three window events (`wc:prefs`, `wc:zones`, `wc:pet`) — no framework, no modules, view-source friendly.
+Plain scripts, one shared `WC` namespace, and four window events (`wc:prefs`, `wc:zones`, `wc:scrub`, `wc:pet`) — no framework, no modules, view-source friendly.
 
 ## Credits
 
