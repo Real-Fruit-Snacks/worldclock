@@ -283,4 +283,8 @@
   }
   WC.onSecond(ambient);
   ambient(WC.now());
+  window.addEventListener("wc:scrub", function () {
+    lastAmbientMin = -1;
+    ambient(WC.now());
+  });
 })();
