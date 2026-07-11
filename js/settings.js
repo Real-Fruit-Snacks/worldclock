@@ -166,6 +166,7 @@
     var b = e.target.closest ? e.target.closest(".seg button") : null;
     if (!b) return;
     var key = b.parentNode.getAttribute("data-pref");
+    if (!key) return;
     var val = b.getAttribute("data-val");
     if (key === "wc-theme") {
       if (val === "system") { WC.prefs.remove("wc-theme"); document.documentElement.removeAttribute("data-theme"); }
