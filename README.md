@@ -76,7 +76,7 @@ Everything needed to host is in this repository — static files only, no build.
 
 **GitLab Pages:** the included [`.gitlab-ci.yml`](.gitlab-ci.yml) publishes the site on every push to the default branch — no configuration needed.
 
-**Anything else:** copy `index.html`, `css/`, and `js/` to any web root.
+**Anything else:** copy `index.html`, `css/`, `js/`, `manifest.webmanifest`, `sw.js`, and `icons/` to any web root.
 
 ## Development
 

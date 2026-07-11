@@ -439,8 +439,8 @@ main {
 /* --- kiosk mode --- */
 :root[data-kiosk="on"] .topbar,
 :root[data-kiosk="on"] .footer,
-:root[data-kiosk="on"] .scrub-bar,
 :root[data-kiosk="on"] .card-chips { display: none; }
+:root[data-kiosk="on"]:not([data-scrub="on"]) .scrub-bar { display: none; }
 :root[data-kiosk="on"] main { max-width: none; }
 :root[data-kiosk="on"] .card-time { font-size: 42px; }
 :root[data-kiosk="on"] .clock-grid { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }

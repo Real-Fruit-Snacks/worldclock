@@ -52,7 +52,8 @@
       var all = WC.names.all();
       name = String(name || "").trim().slice(0, 24);
       if (name) all[zone] = name; else delete all[zone];
-      WC.prefs.set("wc-names", JSON.stringify(all));  /* fires wc:prefs -> re-render */
+      if (Object.keys(all).length) WC.prefs.set("wc-names", JSON.stringify(all));  /* fires wc:prefs -> re-render */
+      else WC.prefs.remove("wc-names");
     },
     display: function (zone) {
       return WC.names.get(zone) || (zone === "UTC" ? "UTC" : WC.cityName(zone));
@@ -81,6 +82,7 @@
   window.addEventListener("wc:scrub", function () {
     syncScrubUI();
     WC.clocks.tick();                 /* immediate refresh; map follows via onSecond */
+    if (WC.map) WC.map.refresh(WC.now(), true);
   });
   syncScrubUI();
 
