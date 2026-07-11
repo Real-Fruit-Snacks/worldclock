@@ -93,6 +93,15 @@
     };
   };
 
+  WC.timeShort = function (date, zone) {
+    var p = WC.time.parts(date, zone);
+    if (WC.prefs.get("wc-hours", "24") === "12") {
+      var f = WC.time.format12(p.h);
+      return f.h12 + ":" + p.mm + " " + f.ampm;
+    }
+    return p.hh + ":" + p.mm;
+  };
+
   /* ---------- UI (only on index.html) ---------- */
   if (!document.getElementById("clock-grid")) return;
 
@@ -322,4 +331,9 @@
     lastAmbientMin = -1;
     ambient(WC.now());
   });
+
+  /* ---------- map time labels: one-time re-render on load ---------- */
+  /* map.js loads before qol.js, so markers rendered at initial load couldn't
+     see WC.timeShort; re-render once now that it exists, if the pref is on. */
+  if (WC.prefs.get("wc-maptime", "off") !== "off" && WC.map) WC.map.render();
 })();

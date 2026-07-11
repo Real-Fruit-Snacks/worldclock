@@ -110,6 +110,14 @@
       "data-zone": zone, transform: "translate(" + px(c[1]).toFixed(1) + "," + py(c[0]).toFixed(1) + ")" });
     if (home) g.appendChild(el("circle", { r: 7, "class": "marker-ring" }));
     g.appendChild(el("circle", { r: 3, "class": "marker-dot" }));
+    var mt = (WC.prefs && WC.prefs.get) ? WC.prefs.get("wc-maptime", "off") : "off";
+    if (mt !== "off" && WC.timeShort) {
+      var t = el("text", { "class": "marker-time",
+        y: mt === "above" ? (home ? -11 : -8) : (home ? 17 : 14),
+        "text-anchor": "middle" });
+      t.textContent = WC.timeShort(WC.now(), zone);
+      g.appendChild(t);
+    }
     return g;
   }
 
@@ -120,13 +128,7 @@
     if (!t) { tipEl.setAttribute("hidden", ""); syncCards(null); return; }
     var zone = t.getAttribute("data-zone");
     var p = WC.time.parts(WC.now(), zone);
-    var timeStr;
-    if (WC.prefs.get("wc-hours", "24") === "12") {
-      var f = WC.time.format12(p.h);
-      timeStr = f.h12 + ":" + p.mm + " " + f.ampm;
-    } else {
-      timeStr = p.hh + ":" + p.mm;
-    }
+    var timeStr = WC.timeShort(WC.now(), zone);
     tipEl.textContent = ((WC.names && WC.names.display) ? WC.names.display(zone) : WC.cityName(zone)) + " · " + timeStr +
       " · " + p.abbr;
     tipEl.removeAttribute("hidden");
@@ -264,6 +266,11 @@
       var info = document.getElementById("map-sun-info");
       if (info) info.textContent =
         "SUN " + ss.lat.toFixed(1) + "°, " + ss.lon.toFixed(1) + "°";
+      if (WC.timeShort) {
+        var mts = markersEl.querySelectorAll(".marker-time");
+        for (var k = 0; k < mts.length; k++)
+          mts[k].textContent = WC.timeShort(date, mts[k].parentNode.getAttribute("data-zone"));
+      }
       if (conns.length) drawConns();
     },
     clearConnectors: function () {

@@ -78,6 +78,9 @@
       '<button data-val="3" style="color:#b78cff">&#9632;</button>' +
       '<button data-val="4" style="color:#f7a35c">&#9632;</button>' +
       '<button data-val="5" style="color:#ff6e7a">&#9632;</button></span>') +
+    settingRow("MAP TIMES", '<span class="seg" data-pref="wc-maptime">' +
+      '<button data-val="off">OFF</button><button data-val="above">ABOVE</button>' +
+      '<button data-val="below">BELOW</button></span>') +
     settingRow("HOME ZONE", '<button id="home-picker" class="text-btn mono"></button>') +
     '<div id="pet-settings"></div>' +
     "</div>";
@@ -152,7 +155,7 @@
     var segs = panel.querySelectorAll(".seg[data-pref]"); /* excludes pet rows (data-petpref) */
     for (var i = 0; i < segs.length; i++) {
       var key = segs[i].getAttribute("data-pref");
-      var defaults = { "wc-hours": "24", "wc-seconds": "on", "wc-theme": "system", "wc-accent": "0" };
+      var defaults = { "wc-hours": "24", "wc-seconds": "on", "wc-theme": "system", "wc-accent": "0", "wc-maptime": "off" };
       var cur = WC.prefs.get(key, defaults[key]);
       var btns = segs[i].querySelectorAll("button");
       for (var j = 0; j < btns.length; j++)

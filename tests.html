@@ -267,6 +267,15 @@ T("connector label", function () {
   assertEq(u.flow, 0, "equal zones do not flow");
   assertEq(WC.connLabel("America/New_York", "Asia/Tokyo", d).leftName, "NEW YORK", "multi-word names survive");
 });
+T("short time format", function () {
+  var d = new Date(Date.UTC(2026, 0, 15, 12, 5, 0));
+  WC.prefs.set("wc-hours", "24");
+  assertEq(WC.timeShort(d, "Asia/Tokyo"), "21:05", "24h form");
+  WC.prefs.set("wc-hours", "12");
+  assertEq(WC.timeShort(d, "Asia/Tokyo"), "9:05 PM", "12h form");
+  assertEq(WC.timeShort(d, "UTC"), "12:05 PM", "12h noon");
+  WC.prefs.remove("wc-hours");
+});
 </script>
 </body>
 </html>
