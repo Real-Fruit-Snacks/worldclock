@@ -18,6 +18,8 @@ var ps=parseInt(localStorage.getItem("wc-pet-size"),10);
 if(ps>=16&&ps<=64)document.documentElement.style.setProperty("--pet-size",ps+"px");
 var po=parseInt(localStorage.getItem("wc-pet-opacity"),10);
 if(po>=15&&po<=100)document.documentElement.style.setProperty("--pet-base-opacity",(po/100).toFixed(3));
+var mp=localStorage.getItem("wc-map");
+if(mp==="collapsed")document.documentElement.setAttribute("data-map","collapsed");
 }catch(e){}})();</script>
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/site.css">
@@ -43,7 +45,11 @@ if(po>=15&&po<=100)document.documentElement.style.setProperty("--pet-base-opacit
 </header>
 <main>
   <section id="map-panel" class="panel map-panel" aria-label="World map">
-    <div class="panel-header"><span class="manifest-label">DAY / NIGHT</span><span id="map-sun-info" class="manifest-label"></span></div>
+    <div class="panel-header"><span class="manifest-label">DAY / NIGHT</span>
+      <span class="panel-header-right"><span id="map-sun-info" class="manifest-label"></span>
+      <button id="btn-map-toggle" class="icon-btn map-toggle" title="Collapse map" aria-label="Collapse or expand map" aria-expanded="true">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button></span></div>
     <div id="map-host"></div>
   </section>
   <div id="scrub-bar" class="scrub-bar" role="group" aria-label="Time scrubber">

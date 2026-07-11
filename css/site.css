@@ -526,3 +526,11 @@ main {
   paint-order: stroke; stroke: var(--twb-bg-0); stroke-width: 2.5px;
   pointer-events: none;
 }
+
+/* --- collapsible map --- */
+.panel-header-right { display: flex; align-items: center; gap: 8px; }
+.map-toggle { width: 22px; height: 22px; }
+.map-toggle svg { transition: transform var(--twb-transition); }
+@media (prefers-reduced-motion: reduce) { .map-toggle svg { transition: none; } }
+:root[data-map="collapsed"] #map-host { display: none; }
+:root[data-map="collapsed"] .map-toggle svg { transform: rotate(180deg); }

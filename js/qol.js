@@ -142,6 +142,7 @@
     helpRow("f", "kiosk mode") +
     helpRow("← →", "scrub time ±1h (shift: 15m)") +
     helpRow("n", "back to now") +
+    helpRow("m", "collapse map") +
     helpRow("?", "this help") +
     helpRow("esc", "close / exit") +
     "</div></div>";
@@ -176,6 +177,23 @@
     }
   }
 
+  /* ---------- collapsible map ---------- */
+  function toggleMap(force) {
+    var collapsed = force !== undefined ? force :
+      document.documentElement.getAttribute("data-map") !== "collapsed";
+    if (collapsed) document.documentElement.setAttribute("data-map", "collapsed");
+    else document.documentElement.removeAttribute("data-map");
+    var btn = document.getElementById("btn-map-toggle");
+    if (btn) btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    WC.prefs.set("wc-map", collapsed ? "collapsed" : "on");
+  }
+  document.getElementById("btn-map-toggle").addEventListener("click", function () { toggleMap(); });
+  (function () {  /* sync aria at load (boot script may have collapsed pre-paint) */
+    var btn = document.getElementById("btn-map-toggle");
+    if (btn && document.documentElement.getAttribute("data-map") === "collapsed")
+      btn.setAttribute("aria-expanded", "false");
+  })();
+
   /* ---------- global shortcuts ---------- */
   function typing(e) {
     var t = e.target;
@@ -191,6 +209,7 @@
       case "t": document.getElementById("btn-theme").click(); break;
       case "f": toggleKiosk(); break;
       case "n": WC.qol.resetScrub(); break;
+      case "m": toggleMap(); break;
       case "?": toggleHelp(); break;
       case "ArrowLeft": e.preventDefault(); WC.qol.scrubBy(e.shiftKey ? -15 : -60); break;
       case "ArrowRight": e.preventDefault(); WC.qol.scrubBy(e.shiftKey ? 15 : 60); break;
