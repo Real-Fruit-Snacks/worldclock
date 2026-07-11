@@ -354,9 +354,12 @@
   }
 
   // --- peek-a-boo (#2) ---
+  var peekEdge = 0, peekHome = null, peekAmt = 1, peekGoal = 0, peekFlipAt = 0, peekSpoke = false;
   function clearPeek() {
     sprite.style.clipPath = "";
     sprite.style.webkitClipPath = "";
+    sprite.classList.remove("pet-sneak");
+    peekHome = null;
   }
   function peekCandidates() {
     var note = document.querySelector("main");
@@ -392,16 +395,64 @@
     }
     tgtEase = PEEK_EASE;
     roamPhase = "peek";
-    phaseUntil = now + 3200 + Math.random() * 2400;
+    peekEdge = edge;
+    peekHome = null;
+    peekAmt = 1; peekGoal = 0; peekFlipAt = 0; peekSpoke = false;
+    phaseUntil = now + 5200 + Math.random() * 3200;
     sprite.style.clipPath = clip;
     sprite.style.webkitClipPath = clip;
     setBoopable(true);
-    say(pick(QUIPS.peek));
   }
+  // Hiding is played sneaky: on arrival the wander stops and the bob pauses,
+  // the ghost tucks almost fully behind the edge and holds its breath, then
+  // slowly peeps out -- ducking straight back down if the pointer comes near.
   function peekStep(now) {
-    ease();
-    bobT += 0.05;
-    renderAt(clampX(x + Math.sin(bobT) * 2.5), clampY(y + Math.sin(bobT * 1.3) * 2.5));
+    if (!peekHome) {
+      ease();
+      renderAt(x, y);
+      if (dist(x, y, tgt.x, tgt.y) < 6 || now > phaseUntil - 2600) {
+        peekHome = { x: x, y: y };
+        lean = 0;
+        sprite.classList.add("pet-sneak");
+        peekFlipAt = now + 1200 + Math.random() * 900;
+      }
+      if (now > phaseUntil) { clearPeek(); enterDrift(now); }
+      return;
+    }
+    var nearPointer = mx !== null &&
+      dist(peekHome.x + SIZE / 2, peekHome.y + SIZE / 2, mx, my) < SIZE * 3;
+    if (nearPointer && peekGoal !== 0) {
+      peekGoal = 0;
+      peekFlipAt = Math.max(peekFlipAt, now + 1600);
+    } else if (now >= peekFlipAt) {
+      if (peekGoal === 0 && !nearPointer) {
+        peekGoal = 1;
+        peekFlipAt = now + 1500 + Math.random() * 1500;
+        if (!peekSpoke) { peekSpoke = true; say(pick(QUIPS.peek)); }
+      } else {
+        peekGoal = 0;
+        peekFlipAt = now + 900 + Math.random() * 1100;
+      }
+    }
+    peekAmt += (peekGoal - peekAmt) * 0.055;
+    bobT += 0.012;
+    var duck = (1 - peekAmt) * SIZE * 0.4;
+    var sway = Math.sin(bobT) * 0.7;
+    var px = peekHome.x, py = peekHome.y, ins;
+    if (peekEdge === 0) {
+      px += sway; py += duck;
+      ins = "inset(0 0 " + (46 + (duck / SIZE) * 100).toFixed(1) + "% 0)";
+    } else if (peekEdge === 1) {
+      px += duck; py += sway;
+      ins = "inset(0 " + (50 + (duck / SIZE) * 100).toFixed(1) + "% 0 0)";
+    } else {
+      px -= duck; py += sway;
+      ins = "inset(0 0 0 " + (50 + (duck / SIZE) * 100).toFixed(1) + "%)";
+    }
+    sprite.style.clipPath = ins;
+    sprite.style.webkitClipPath = ins;
+    x = px; y = py;
+    renderAt(px, py);
     if (now > phaseUntil) { clearPeek(); enterDrift(now); }
   }
 

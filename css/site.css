@@ -277,6 +277,7 @@ main {
 .pet-sprite.pet-happy .pet-eyes-happy { display: inline; }
 /* Boop: a quick happy squish-and-pop (overrides the idle bob while it plays). */
 .pet-sprite.pet-happy { animation: pet-boop 0.5s ease-in-out; }
+.pet-sprite.pet-sneak { animation-play-state: paused; }
 /* Startled: cartoon vertical squash-and-stretch as it zips away (#3). */
 .pet-sprite.pet-spook { animation: pet-spook 0.5s ease-out; }
 /* Bored barrel-roll / flip (#4). */
