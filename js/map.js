@@ -108,7 +108,7 @@
     var t = e.target.closest ? e.target.closest(".map-marker") : null;
     if (!t) { tipEl.setAttribute("hidden", ""); syncCards(null); return; }
     var zone = t.getAttribute("data-zone");
-    var p = WC.time.parts(new Date(), zone);
+    var p = WC.time.parts(WC.now(), zone);
     var timeStr;
     if (WC.prefs.get("wc-hours", "24") === "12") {
       var f = WC.time.format12(p.h);
@@ -144,7 +144,7 @@
         var m = markerHTML(all[i], i === 0);
         if (m) markersEl.appendChild(m);
       }
-      WC.map.refresh(new Date(), true);
+      WC.map.refresh(WC.now(), true);
     },
     refresh: function (date, force) {
       if (!svg) return;

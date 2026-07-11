@@ -21,6 +21,7 @@ div { margin: 2px 0; }
 <script src="js/clocks.js"></script>
 <script src="js/mapdata.js"></script>
 <script src="js/map.js"></script>
+<script src="js/qol.js"></script>
 <script>
 var _tests = [], _pass = 0, _fail = 0;
 function T(name, fn) { _tests.push([name, fn]); }
@@ -168,6 +169,26 @@ T("map has no antimeridian chords", function () {
     prevX = x;
   }
   assertEq(chords, 0, "no full-width horizontal chords in land path");
+});
+T("scrub core", function () {
+  assertEq(WC.scrub.minutes, 0, "scrub starts at 0");
+  var real = Date.now();
+  WC.setScrub(120);
+  assert(Math.abs(WC.now().getTime() - real - 120 * 60000) < 2000, "WC.now shifted +2h");
+  WC.setScrub(99999);
+  assertEq(WC.scrub.minutes, 1440, "clamped to +1440");
+  WC.setScrub(-99999);
+  assertEq(WC.scrub.minutes, -1440, "clamped to -1440");
+  WC.setScrub(0);
+  assertEq(WC.scrub.minutes, 0, "reset");
+  assert(Math.abs(WC.now().getTime() - Date.now()) < 2000, "WC.now == now at 0");
+});
+T("scrub label", function () {
+  assertEq(WC.scrubLabel(0), "NOW", "zero is NOW");
+  assertEq(WC.scrubLabel(180), "+3H", "whole hours");
+  assertEq(WC.scrubLabel(-45), "-45M", "minutes only");
+  assertEq(WC.scrubLabel(210), "+3H30M", "mixed");
+  assertEq(WC.scrubLabel(-1440), "-24H", "full day");
 });
 </script>
 </body>

@@ -86,6 +86,25 @@
       return { h12: (h % 12) || 12, ampm: h < 12 ? "AM" : "PM" };
     }
   };
+
+  /* Time scrubbing: every display reads WC.now(); the scrubber shifts it. */
+  WC.scrub = { minutes: 0 };
+  WC.now = function () {
+    return new Date(Date.now() + WC.scrub.minutes * 60000);
+  };
+  WC.setScrub = function (min) {
+    min = Math.max(-1440, Math.min(1440, min | 0));
+    WC.scrub.minutes = min;
+    if (min) document.documentElement.setAttribute("data-scrub", "on");
+    else document.documentElement.removeAttribute("data-scrub");
+    window.dispatchEvent(new Event("wc:scrub"));
+  };
+  WC.scrubLabel = function (min) {
+    if (!min) return "NOW";
+    var sign = min > 0 ? "+" : "-", a = Math.abs(min);
+    var h = Math.floor(a / 60), m = a % 60;
+    return sign + (h ? h + "H" : "") + (m ? m + "M" : "");
+  };
 })();
 
 /* Card rendering + 1 s tick. */
@@ -185,13 +204,13 @@
       loadState();
       var grid = document.getElementById("clock-grid");
       if (!grid) return;
-      var date = new Date();
+      var date = WC.now();
       var html = cardHTML(state.home, true, date);
       for (var i = 0; i < state.zones.length; i++) html += cardHTML(state.zones[i], false, date);
       grid.innerHTML = html;
     },
     tick: function () {
-      var date = new Date();
+      var date = WC.now();
       var utc = document.getElementById("utc-clock");
       if (utc) {
         var u = WC.time.parts(date, "UTC");

@@ -41,6 +41,12 @@ if(po>=15&&po<=100)document.documentElement.style.setProperty("--pet-base-opacit
     <div class="panel-header"><span class="manifest-label">DAY / NIGHT</span><span id="map-sun-info" class="manifest-label"></span></div>
     <div id="map-host"></div>
   </section>
+  <div id="scrub-bar" class="scrub-bar" role="group" aria-label="Time scrubber">
+    <span class="manifest-label">TIME</span>
+    <input id="scrub-range" type="range" min="-1440" max="1440" step="15" value="0" aria-label="Time offset in minutes">
+    <span id="scrub-label" class="mono scrub-label">NOW</span>
+    <button id="scrub-now" class="scrub-now-btn mono" title="Back to now" hidden>RESET</button>
+  </div>
   <section id="clock-grid" class="clock-grid" aria-label="Clocks"></section>
 </main>
 <footer class="footer">
@@ -54,6 +60,7 @@ if(po>=15&&po<=100)document.documentElement.style.setProperty("--pet-base-opacit
 <script src="js/clocks.js"></script>
 <script src="js/mapdata.js"></script>
 <script src="js/map.js"></script>
+<script src="js/qol.js"></script>
 <script src="js/pet.js"></script>
 </body>
 </html>
