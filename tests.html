@@ -74,6 +74,52 @@ T("aliases and curated", function () {
   assertEq(WC.cityName("UTC"), "UTC", "cityName passes UTC through");
   assert(WC.allZones().length >= Object.keys(WC.ZONES).length - 5, "allZones covers table");
 });
+T("time parts", function () {
+  var d = new Date(Date.UTC(2026, 0, 15, 12, 0, 0)); /* 2026-01-15T12:00Z */
+  var p = WC.time.parts(d, "Asia/Tokyo");
+  assertEq(p.hh, "21", "Tokyo hour at noon UTC in January");
+  assertEq(p.mm, "00", "Tokyo minutes");
+  assert(p.abbr === "JST" || /GMT\+9/.test(p.abbr), "Tokyo abbreviation (got " + JSON.stringify(p.abbr) + ")");
+  var q = WC.time.parts(d, "America/New_York");
+  assertEq(q.hh, "07", "New York hour (EST)");
+  assertEq(q.weekday, "Thu", "weekday in zone");
+  var u = WC.time.parts(new Date(Date.UTC(2026, 6, 10, 0, 30, 5)), "UTC");
+  assertEq(u.hh + ":" + u.mm + ":" + u.ss, "00:30:05", "UTC midnight formats as 00, padded");
+});
+T("offsets", function () {
+  var jan = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
+  var jul = new Date(Date.UTC(2026, 6, 10, 12, 0, 0));
+  assertEq(WC.time.offsetMinutes(jan, "Asia/Tokyo"), 540, "Tokyo +540");
+  assertEq(WC.time.offsetMinutes(jan, "America/New_York"), -300, "NY winter -300");
+  assertEq(WC.time.offsetMinutes(jul, "America/New_York"), -240, "NY summer -240 (DST)");
+  assertEq(WC.time.offsetMinutes(jan, "Asia/Kolkata"), 330, "Kolkata +330");
+  assertEq(WC.time.offsetMinutes(jan, "UTC"), 0, "UTC 0");
+  assertEq(WC.time.offsetLabel(540), "UTC+9", "label +9");
+  assertEq(WC.time.offsetLabel(-240), "UTC-4", "label -4");
+  assertEq(WC.time.offsetLabel(330), "UTC+5.5", "label +5.5");
+  assertEq(WC.time.offsetLabel(0), "UTC±0", "label zero");
+});
+T("home delta", function () {
+  var d = new Date(Date.UTC(2026, 6, 10, 3, 0, 0)); /* 03:00Z Jul 10 */
+  var r = WC.time.homeDelta(d, "America/New_York", "Asia/Tokyo");
+  assertEq(r.label, "-13h", "NY seen from Tokyo is -13h in July");
+  assertEq(r.dayRel, "yesterday", "NY is on yesterday at 03:00Z");
+  var r2 = WC.time.homeDelta(d, "Asia/Tokyo", "America/New_York");
+  assertEq(r2.label, "+13h", "Tokyo seen from NY");
+  assertEq(r2.dayRel, "tomorrow", "Tokyo on tomorrow");
+  var r3 = WC.time.homeDelta(d, "Asia/Kolkata", "UTC");
+  assertEq(r3.label, "+5.5h", "half-hour zone");
+  var r4 = WC.time.homeDelta(d, "UTC", "UTC");
+  assertEq(r4.label, "±0h", "same zone");
+  assertEq(r4.dayRel, "today", "same zone today");
+});
+T("12h conversion", function () {
+  assertEq(WC.time.format12(0).h12, 12, "0 -> 12 AM");
+  assertEq(WC.time.format12(0).ampm, "AM", "0 is AM");
+  assertEq(WC.time.format12(12).h12, 12, "12 -> 12 PM");
+  assertEq(WC.time.format12(12).ampm, "PM", "12 is PM");
+  assertEq(WC.time.format12(15).h12, 3, "15 -> 3");
+});
 </script>
 </body>
 </html>
