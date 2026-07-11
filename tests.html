@@ -190,6 +190,26 @@ T("scrub label", function () {
   assertEq(WC.scrubLabel(210), "+3H30M", "mixed");
   assertEq(WC.scrubLabel(-1440), "-24H", "full day");
 });
+T("sort by time", function () {
+  var d = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
+  var out = WC.sortZonesByTime(["Asia/Tokyo", "Europe/London", "America/New_York"], d);
+  assertEq(out.join("|"), "America/New_York|Europe/London|Asia/Tokyo", "west to east in January");
+  assertEq(["Asia/Tokyo", "Europe/London"].join("|"), "Asia/Tokyo|Europe/London", "input not mutated check baseline");
+  var src = ["Asia/Tokyo", "Europe/London"];
+  WC.sortZonesByTime(src, d);
+  assertEq(src.join("|"), "Asia/Tokyo|Europe/London", "input array not mutated");
+});
+T("share hash codec", function () {
+  var h = WC.share.encode(["Asia/Tokyo", "America/New_York"], "Europe/London");
+  assertEq(h, "#z=Asia%2FTokyo,America%2FNew_York&h=Europe%2FLondon", "encode");
+  var back = WC.share.decode(h);
+  assertEq(back.zones.join("|"), "Asia/Tokyo|America/New_York", "decode zones");
+  assertEq(back.home, "Europe/London", "decode home");
+  var junk = WC.share.decode("#z=Asia%2FTokyo,Not%2FAZone");
+  assertEq(junk.zones.join("|"), "Asia/Tokyo", "invalid zones dropped");
+  assertEq(WC.share.decode("#foo=bar"), null, "no z= -> null");
+  assertEq(WC.share.decode(""), null, "empty -> null");
+});
 </script>
 </body>
 </html>

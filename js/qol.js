@@ -6,6 +6,38 @@
   window.WC = window.WC || {};
   WC.qol = {};
 
+  function validZone(z) {
+    try { new Intl.DateTimeFormat("en-US", { timeZone: z }); return true; }
+    catch (e) { return false; }
+  }
+
+  WC.sortZonesByTime = function (zones, date) {
+    return zones.slice().sort(function (a, b) {
+      return (WC.time.offsetMinutes(date, a) - WC.time.offsetMinutes(date, b)) ||
+        WC.cityName(a).localeCompare(WC.cityName(b));
+    });
+  };
+
+  WC.share = {
+    encode: function (zones, home) {
+      var h = "#z=" + zones.map(encodeURIComponent).join(",");
+      if (home) h += "&h=" + encodeURIComponent(home);
+      return h;
+    },
+    decode: function (hash) {
+      if (!hash) return null;
+      var m = /[#&]z=([^&]*)/.exec(hash);
+      if (!m) return null;
+      var zones = m[1].split(",").map(decodeURIComponent).filter(function (z) {
+        return z && validZone(z);
+      });
+      var hm = /[#&]h=([^&]*)/.exec(hash);
+      var home = hm ? decodeURIComponent(hm[1]) : null;
+      if (home && !validZone(home)) home = null;
+      return { zones: zones, home: home };
+    }
+  };
+
   /* ---------- UI (only on index.html) ---------- */
   if (!document.getElementById("clock-grid")) return;
 
@@ -98,5 +130,57 @@
       case "ArrowLeft": e.preventDefault(); WC.qol.scrubBy(e.shiftKey ? -15 : -60); break;
       case "ArrowRight": e.preventDefault(); WC.qol.scrubBy(e.shiftKey ? 15 : 60); break;
     }
+  });
+
+  /* ---------- sort by time ---------- */
+  document.getElementById("btn-sort").addEventListener("click", function () {
+    var zones = WC.prefs.getZones() || WC.DEFAULT_ZONES.slice();
+    WC.prefs.setZones(WC.sortZonesByTime(zones, WC.now()));
+  });
+
+  /* ---------- clipboard helper (also used by card copy) ---------- */
+  function copyText(text, done) {
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) { /* best effort */ }
+      document.body.removeChild(ta); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else fallback();
+  }
+
+  /* ---------- shareable URL ---------- */
+  function currentShareHash() {
+    var st = WC.clocks.state();
+    return WC.share.encode(st.zones, st.home);
+  }
+  function syncHash() {
+    try { history.replaceState(null, "", location.pathname + location.search + currentShareHash()); }
+    catch (e) { /* file:// may refuse */ }
+  }
+  var imported = WC.share.decode(location.hash);
+  if (imported && imported.zones.length) {
+    if (imported.home) WC.prefs.set("wc-home", imported.home);
+    WC.prefs.setZones(imported.zones);   /* fires wc:zones -> re-render */
+  }
+  window.addEventListener("wc:zones", syncHash);
+  syncHash();
+
+  /* copy-link row in the settings panel */
+  var shareRow = document.createElement("div");
+  shareRow.className = "setting-row";
+  shareRow.innerHTML = '<span class="manifest-label">SHARE</span>' +
+    '<button id="copy-link" class="text-btn mono">COPY LINK</button>';
+  var settingsBody = document.querySelector("#settings-panel .settings-body");
+  settingsBody.insertBefore(shareRow, document.getElementById("pet-settings"));
+  document.getElementById("copy-link").addEventListener("click", function () {
+    var btn = this;
+    copyText(location.origin === "null" ? currentShareHash() : location.href.split("#")[0] + currentShareHash(), function () {
+      btn.textContent = "COPIED";
+      setTimeout(function () { btn.textContent = "COPY LINK"; }, 1500);
+    });
   });
 })();
