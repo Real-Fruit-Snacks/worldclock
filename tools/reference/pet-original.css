@@ -1,0 +1,108 @@
+/* --- site pet (site.config.json: pet_enabled) --- */
+#site-pet {
+  position: fixed; left: 0; top: 0;
+  width: var(--pet-size, 28px); height: var(--pet-size, 28px);
+  /* Below the topbar's stacking context (20) so the ghost never covers the
+     open search dropdown or steals a click on a result; still floats above
+     the article's auto-stacked content. */
+  z-index: 19; pointer-events: none;
+  opacity: var(--pet-base-opacity, 0.7);  /* translucent; dims further while napping */
+  transition: opacity 0.9s ease;
+}
+#site-pet.pet-nap { opacity: 0.3; }
+.pet-tilt { width: 100%; height: 100%; }
+.pet-sprite {
+  width: 100%; height: 100%;
+  pointer-events: auto; cursor: grab;
+  touch-action: none;
+  animation: pet-bob 2.4s ease-in-out infinite;
+}
+.pet-sprite:active { cursor: grabbing; }
+.pet-sprite svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+/* Petting the ghost cycles its body through the theme palette (same six
+   tokens as the folder colors); the index rides on data-color, and 0 is the
+   default accent. Tokens are theme-aware, so the color follows light/dark. */
+.pet-body { fill: var(--twb-accent); }
+#site-pet[data-color="1"] .pet-body { fill: var(--twb-accent-alt); }
+#site-pet[data-color="2"] .pet-body { fill: var(--twb-warm); }
+#site-pet[data-color="3"] .pet-body { fill: var(--twb-violet); }
+#site-pet[data-color="4"] .pet-body { fill: var(--twb-orange); }
+#site-pet[data-color="5"] .pet-body { fill: var(--twb-red); }
+.pet-eyes-open rect, .pet-eyes-closed rect { fill: var(--twb-bg-0); }
+.pet-eyes-happy path { stroke: var(--twb-bg-0); stroke-width: 1.2; fill: none; }
+.pet-eyes-closed, .pet-eyes-happy { display: none; }
+.pet-sprite.pet-blink .pet-eyes-open,
+#site-pet.pet-nap .pet-eyes-open,
+.pet-sprite.pet-happy .pet-eyes-open { display: none; }
+.pet-sprite.pet-blink .pet-eyes-closed,
+#site-pet.pet-nap .pet-eyes-closed { display: inline; }
+.pet-sprite.pet-happy .pet-eyes-happy { display: inline; }
+/* Boop: a quick happy squish-and-pop (overrides the idle bob while it plays). */
+.pet-sprite.pet-happy { animation: pet-boop 0.5s ease-in-out; }
+/* Startled: cartoon vertical squash-and-stretch as it zips away (#3). */
+.pet-sprite.pet-spook { animation: pet-spook 0.5s ease-out; }
+/* Bored barrel-roll / flip (#4). */
+.pet-sprite.pet-spin { animation: pet-spin 0.74s ease-in-out; }
+.pet-sprite.pet-flip { animation: pet-flip 0.74s ease-in-out; }
+/* The whole ghost dips in opacity for the beat of a startle. */
+#site-pet.pet-startled { animation: pet-startle-fade 0.7s ease-out; }
+.pet-particle {
+  position: absolute; left: 9px; top: -8px;
+  font-family: var(--twb-font-mono); font-size: 12px; font-weight: 700;
+  pointer-events: none;
+  animation: pet-float 1.3s ease-out forwards;
+}
+.pet-heart { color: var(--twb-red); }
+.pet-bang { color: var(--twb-accent); }
+.pet-z { color: var(--twb-text-muted); }
+@keyframes pet-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes pet-boop {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.9); }
+}
+@keyframes pet-spook {
+  0% { transform: scaleY(1) scaleX(1); }
+  25% { transform: scaleY(1.5) scaleX(0.65); }
+  60% { transform: scaleY(0.9) scaleX(1.12); }
+  100% { transform: scaleY(1) scaleX(1); }
+}
+@keyframes pet-spin {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
+}
+@keyframes pet-flip {
+  from { transform: rotateY(0); }
+  to { transform: rotateY(360deg); }
+}
+@keyframes pet-startle-fade {
+  0% { opacity: 0.7; }
+  30% { opacity: 0.25; }
+  100% { opacity: 0.7; }
+}
+@keyframes pet-float {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-26px); }
+}
+.pet-bubble {
+  position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px;
+  transform: translateX(-50%);
+  padding: 3px 7px; font-family: var(--twb-font-mono); font-size: 11px; line-height: 1.2;
+  white-space: nowrap; color: var(--twb-text-normal);
+  background: var(--twb-bg-2); border: 1px solid var(--twb-border);
+  border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.28);
+  pointer-events: none; animation: pet-bubble-in 2.6s ease forwards;
+}
+.pet-bubble::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 4px solid transparent; border-top-color: var(--twb-bg-2);
+}
+.pet-bubble-boop, .pet-bubble-good { color: var(--twb-accent); }
+@keyframes pet-bubble-in {
+  0% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  12%, 82% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-2px); }
+}
