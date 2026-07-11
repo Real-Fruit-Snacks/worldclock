@@ -57,7 +57,7 @@
   }
 
   var svg = null, nightEl = null, sunEl = null, markersEl = null, tipEl = null;
-  var connEl = null, snapEl = null, chipEl = null, cdrag = null, conn = null;
+  var connEl = null, snapEl = null, cdrag = null, conns = [];
 
   function el(name, attrs) {
     var e = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -95,15 +95,10 @@
     tipEl.className = "map-tip mono";
     tipEl.setAttribute("hidden", "");
     host.appendChild(tipEl);
-    chipEl = document.createElement("div");
-    chipEl.className = "conn-chip mono";
-    chipEl.hidden = true;
-    host.appendChild(chipEl);
     svg.style.touchAction = "none";
     svg.addEventListener("pointerdown", connStart);
     svg.addEventListener("pointermove", connMove);
     window.addEventListener("pointerup", connEnd);
-    window.addEventListener("resize", function () { if (conn) updateChip(); });
     host.addEventListener("mousemove", onHover);
     host.addEventListener("mouseleave", function () { tipEl.setAttribute("hidden", ""); syncCards(null); });
   }
@@ -120,6 +115,7 @@
 
   function onHover(e) {
     if (cdrag && cdrag.moved) return;
+    if (e.target.closest && e.target.closest(".conn-g")) { tipEl.setAttribute("hidden", ""); return; }
     var t = e.target.closest ? e.target.closest(".map-marker") : null;
     if (!t) { tipEl.setAttribute("hidden", ""); syncCards(null); return; }
     var zone = t.getAttribute("data-zone");
@@ -159,7 +155,8 @@
     var ll = eventLatLon(e);
     var near = WC.nearestZone(ll.lat, ll.lon);
     if (!near) return;
-    cdrag = { sx: e.clientX, sy: e.clientY, startZone: near.zone, moved: false };
+    cdrag = { sx: e.clientX, sy: e.clientY, startZone: near.zone, moved: false,
+      onConn: e.target.closest ? e.target.closest(".conn-g") : null };
   }
   function connMove(e) {
     if (!cdrag) return;
@@ -178,59 +175,67 @@
       snapEl.setAttribute("cy", py(near.lat).toFixed(1));
       snapEl.setAttribute("visibility", "visible");
     }
-    chipEl.hidden = true;
     tipEl.setAttribute("hidden", "");
   }
   function connEnd(e) {
     if (!cdrag) return;
     var d = cdrag; cdrag = null;
     snapEl.setAttribute("visibility", "hidden");
-    if (!d.moved) { WC.map.clearConnector(); return; }  /* plain click clears */
+    if (!d.moved) {                       /* plain click: delete that line only */
+      if (d.onConn) removeConn(d.onConn.getAttribute("data-pair"));
+      drawConns();
+      return;
+    }
     var ll = eventLatLon(e);
     var near = WC.nearestZone(ll.lat, ll.lon);
-    if (!near || near.zone === d.startZone) { WC.map.clearConnector(); return; }
-    conn = { a: d.startZone, b: near.zone };
-    drawConn();
+    if (!near || near.zone === d.startZone) { drawConns(); return; }
+    addConn(d.startZone, near.zone);
   }
-  function drawConn() {
+  function pairKey(a, b) { return a < b ? a + "|" + b : b + "|" + a; }
+  function addConn(a, b) {
+    removeConn(pairKey(a, b));            /* same pair replaces */
+    conns.push({ a: a, b: b });
+    drawConns();
+  }
+  function removeConn(key) {
+    conns = conns.filter(function (c) { return pairKey(c.a, c.b) !== key; });
+  }
+  function drawConns() {
     connEl.innerHTML = "";
-    if (!conn) { chipEl.hidden = true; return; }
-    var A = WC.ZONES[conn.a], B = WC.ZONES[conn.b];
-    connEl.appendChild(el("line", { x1: px(A[1]).toFixed(1), y1: py(A[0]).toFixed(1),
-      x2: px(B[1]).toFixed(1), y2: py(B[0]).toFixed(1), "class": "conn-line" }));
-    connEl.appendChild(el("circle", { cx: px(A[1]).toFixed(1), cy: py(A[0]).toFixed(1), r: 4, "class": "conn-dot" }));
-    connEl.appendChild(el("circle", { cx: px(B[1]).toFixed(1), cy: py(B[0]).toFixed(1), r: 4, "class": "conn-dot" }));
-    updateChip();
-  }
-  function connName(z) {
-    return ((WC.names && WC.names.display) ? WC.names.display(z) : WC.cityName(z));
-  }
-  function updateChip() {
-    if (!conn) return;
     var now = WC.now();
-    var diff = WC.time.offsetMinutes(now, conn.b) - WC.time.offsetMinutes(now, conn.a);
-    chipEl.innerHTML = "";
-    var span = document.createElement("span");
-    span.textContent = connName(conn.a).toUpperCase() + " → " +
-      connName(conn.b).toUpperCase() + " " + WC.time.deltaLabel(diff);
-    var pa = WC.time.parts(now, conn.a), pb = WC.time.parts(now, conn.b);
-    chipEl.title = connName(conn.a) + " " + pa.hh + ":" + pa.mm + " · " +
-      connName(conn.b) + " " + pb.hh + ":" + pb.mm;
-    var x = document.createElement("button");
-    x.className = "conn-x";
-    x.setAttribute("aria-label", "Clear measurement");
-    x.textContent = "×";
-    x.addEventListener("click", function () { WC.map.clearConnector(); });
-    chipEl.appendChild(span);
-    chipEl.appendChild(x);
-    chipEl.hidden = false;
-    var A = WC.ZONES[conn.a], B = WC.ZONES[conn.b];
-    var r = svg.getBoundingClientRect();
-    var hostR = svg.parentNode.getBoundingClientRect();
-    var mx = ((px(A[1]) + px(B[1])) / 2) / W * r.width + (r.left - hostR.left);
-    var my = ((py(A[0]) + py(B[0])) / 2) / H * r.height + (r.top - hostR.top);
-    chipEl.style.left = mx + "px";
-    chipEl.style.top = my + "px";
+    for (var i = 0; i < conns.length; i++) {
+      var c = conns[i];
+      var L = WC.connLabel(c.a, c.b, now);
+      var A = WC.ZONES[L.left], B = WC.ZONES[L.right];
+      if (!A || !B) continue;
+      var x1 = px(A[1]), y1 = py(A[0]), x2 = px(B[1]), y2 = py(B[0]);
+      var g = el("g", { "class": "conn-g" + (i < conns.length - 1 ? " conn-old" : ""),
+        "data-pair": pairKey(c.a, c.b) });
+      var pid = "conn-path-" + i;
+      g.appendChild(el("path", { d: "M" + x1.toFixed(1) + " " + y1.toFixed(1) +
+        "L" + x2.toFixed(1) + " " + y2.toFixed(1), "class": "conn-hit" }));
+      var line = el("path", { id: pid, d: "M" + x1.toFixed(1) + " " + y1.toFixed(1) +
+        "L" + x2.toFixed(1) + " " + y2.toFixed(1),
+        "class": "conn-line" + (L.flow === 1 ? " conn-flow-fwd" : (L.flow === -1 ? " conn-flow-rev" : "")) });
+      g.appendChild(line);
+      g.appendChild(el("circle", { cx: x1.toFixed(1), cy: y1.toFixed(1), r: 4, "class": "conn-dot" }));
+      g.appendChild(el("circle", { cx: x2.toFixed(1), cy: y2.toFixed(1), r: 4, "class": "conn-dot" }));
+      var len = Math.hypot(x2 - x1, y2 - y1);
+      var labelText = len > L.text.length * 8 ? L.text : L.compact;
+      var text = el("text", { "class": "conn-label", dy: "-4" });
+      var tp = el("textPath", { startOffset: "50%", "text-anchor": "middle" });
+      tp.setAttribute("href", "#" + pid);
+      tp.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#" + pid);
+      tp.textContent = labelText;
+      text.appendChild(tp);
+      g.appendChild(text);
+      var pa = WC.time.parts(now, L.left), pb = WC.time.parts(now, L.right);
+      var title = el("title", {});
+      title.textContent = L.text.split(" ")[0] + " " + pa.hh + ":" + pa.mm +
+        " · " + L.text.split(" ").pop() + " " + pb.hh + ":" + pb.mm;
+      g.appendChild(title);
+      connEl.appendChild(g);
+    }
   }
 
   var lastMinute = -1;
@@ -259,12 +264,11 @@
       var info = document.getElementById("map-sun-info");
       if (info) info.textContent =
         "SUN " + ss.lat.toFixed(1) + "°, " + ss.lon.toFixed(1) + "°";
-      if (conn) updateChip();
+      if (conns.length) drawConns();
     },
-    clearConnector: function () {
-      conn = null;
+    clearConnectors: function () {
+      conns = [];
       if (connEl) connEl.innerHTML = "";
-      if (chipEl) chipEl.hidden = true;
     }
   };
 

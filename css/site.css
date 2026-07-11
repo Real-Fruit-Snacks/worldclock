@@ -492,21 +492,29 @@ main {
   background: var(--twb-accent); border-radius: 1px;
 }
 
-/* --- map measure connector --- */
-.conn-line { stroke: var(--twb-accent-alt); stroke-width: 1.6; stroke-dasharray: 6 4; }
-.conn-dot { fill: var(--twb-accent-alt); }
+/* --- map measure connectors (multiple; label rides the line) --- */
+.conn-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.conn-line {
+  fill: none; stroke: var(--twb-accent-alt); stroke-width: 1.5;
+  stroke-dasharray: 7 5; pointer-events: none;
+}
+.conn-dot { fill: var(--twb-accent-alt); pointer-events: none; }
 .conn-snap { fill: none; stroke: var(--twb-accent-alt); stroke-width: 1.4; opacity: 0.8; }
-.conn-chip {
-  position: absolute; z-index: 6; transform: translate(-50%, -140%);
-  display: flex; align-items: center; gap: 6px;
-  padding: 3px 8px; font-size: 11px; white-space: nowrap;
-  background: var(--twb-bg-2); border: 1px solid var(--twb-accent-alt);
-  border-radius: var(--twb-radius-s); color: var(--twb-text-normal);
-  box-shadow: var(--twb-shadow-pane);
+.conn-label {
+  font-family: var(--twb-font-mono); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em; fill: var(--twb-text-normal);
+  paint-order: stroke; stroke: var(--twb-bg-0); stroke-width: 3px;
+  pointer-events: none;
 }
-.conn-chip .conn-x {
-  background: transparent; border: none; padding: 0 2px;
-  color: var(--twb-text-faint); font-size: 13px; cursor: pointer;
-  font-family: var(--twb-font-mono);
+.conn-g.conn-old { opacity: 0.55; }
+.conn-g:hover { opacity: 1; }
+.conn-g:hover .conn-line { stroke: var(--twb-red); }
+.conn-g:hover .conn-dot { fill: var(--twb-red); }
+@media (prefers-reduced-motion: no-preference) {
+  .conn-line.conn-flow-fwd { animation: conn-flow 0.9s linear infinite; }
+  .conn-line.conn-flow-rev { animation: conn-flow 0.9s linear infinite reverse; }
 }
-.conn-chip .conn-x:hover { color: var(--twb-red); }
+@keyframes conn-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -24; }
+}

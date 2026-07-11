@@ -253,6 +253,19 @@ T("delta label", function () {
   var d = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
   assertEq(WC.time.homeDelta(d, "Asia/Tokyo", "America/New_York").label, WC.time.deltaLabel(840), "homeDelta uses deltaLabel");
 });
+T("connector label", function () {
+  var d = new Date(Date.UTC(2026, 0, 15, 12, 0, 0));
+  var r = WC.connLabel("Asia/Tokyo", "America/Denver", d);
+  assertEq(r.left, "America/Denver", "Denver is west of Tokyo");
+  assertEq(r.text, "DENVER +16H TOKYO", "text reads left to right (Jan: MST-7 to JST+9)");
+  assertEq(r.compact, "+16H", "compact form");
+  assertEq(r.flow, 1, "time flows toward the later (right) zone");
+  var s = WC.connLabel("Australia/Sydney", "Europe/London", d);
+  assertEq(s.left, "Europe/London", "London west of Sydney");
+  assertEq(s.flow, 1, "Sydney later in January");
+  var u = WC.connLabel("UTC", "Etc/GMT", d);
+  assertEq(u.flow, 0, "equal zones do not flow");
+});
 </script>
 </body>
 </html>

@@ -73,6 +73,25 @@
     return best ? { zone: best, lat: WC.ZONES[best][0], lon: WC.ZONES[best][1], deg: bestD * 180 / Math.PI } : null;
   };
 
+  WC.connLabel = function (a, b, date) {
+    var la = WC.ZONES[a] ? WC.ZONES[a][1] : 0, lb = WC.ZONES[b] ? WC.ZONES[b][1] : 0;
+    var ta = WC.ZONES[a] ? WC.ZONES[a][0] : 0, tb = WC.ZONES[b] ? WC.ZONES[b][0] : 0;
+    var left = a, right = b;
+    if (lb < la || (lb === la && tb > ta)) { left = b; right = a; }
+    var diff = WC.time.offsetMinutes(date, right) - WC.time.offsetMinutes(date, left);
+    var name = function (z) {
+      return ((WC.names && WC.names.display) ? WC.names.display(z) :
+        (z === "UTC" ? "UTC" : WC.cityName(z))).toUpperCase();
+    };
+    var compact = WC.time.deltaLabel(diff).toUpperCase();
+    return {
+      left: left, right: right,
+      text: name(left) + " " + compact + " " + name(right),
+      compact: compact,
+      flow: diff > 0 ? 1 : (diff < 0 ? -1 : 0)
+    };
+  };
+
   /* ---------- UI (only on index.html) ---------- */
   if (!document.getElementById("clock-grid")) return;
 
@@ -154,7 +173,7 @@
   }
   document.addEventListener("keydown", function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === "Escape") { if (WC.map && WC.map.clearConnector) WC.map.clearConnector(); toggleHelp(false); toggleKiosk(false); return; }
+    if (e.key === "Escape") { if (WC.map && WC.map.clearConnectors) WC.map.clearConnectors(); toggleHelp(false); toggleKiosk(false); return; }
     if (typing(e)) return;
     switch (e.key) {
       case "/": e.preventDefault(); document.getElementById("btn-add").click(); break;

@@ -40,7 +40,7 @@ calm graphite surfaces, restrained ANSI accents, monospace manifest labels.
 - **Kiosk mode** — press `f` to hide the chrome for a clean, wall-display view; `esc` (or `f` again) exits.
 - **Installable PWA** — add it to your home screen or desktop; a service worker caches everything on first visit so it keeps working fully offline afterward.
 - **Sort by time** — one topbar button reorders every card by current local time.
-- **Measure on the map** — drag between any two points; both ends snap to the nearest city and a chip on the line shows the time difference (hover it for both local times; click ×, press esc, or click the map to clear).
+- **Measure on the map** — drag between any two points; the ends snap to the nearest cities and the time difference rides the line itself, with the dashes flowing toward the later timezone. Draw as many as you like — click a line to remove it, esc clears them all.
 
 ## Run it
 
