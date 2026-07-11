@@ -220,6 +220,8 @@ T("nicknames", function () {
   assertEq(WC.names.get("Asia/Tokyo"), null, "empty removes");
   assertEq(WC.names.display("Asia/Tokyo"), "Tokyo", "display falls back to city");
   assertEq(WC.names.display("UTC"), "UTC", "UTC passthrough");
+  WC.names.set("Asia/Tokyo", '<b>"x"</b>');
+  assertEq(WC.names.get("Asia/Tokyo"), '<b>"x"</b>', "raw value stored untouched");
   WC.prefs.remove("wc-names");
 });
 </script>
