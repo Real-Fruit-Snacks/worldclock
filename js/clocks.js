@@ -67,7 +67,7 @@
       var h = Math.floor(a / 60), frac = a % 60;
       return "UTC" + sign + h + (frac ? fracLabel(frac) : "");
     },
-    homeDelta: function (date, zone, home) {
+    homeDelta: function (date, zone, home, refDate) {
       var d = WC.time.offsetMinutes(date, zone) - WC.time.offsetMinutes(date, home);
       var label;
       if (d === 0) label = "±0h";
@@ -76,10 +76,11 @@
         var h = Math.floor(a / 60), rem = a % 60;
         label = sign + h + (rem ? fracLabel(rem) : "") + "h";
       }
-      var zd = dateFmt(zone).format(date), hd = dateFmt(home).format(date);
-      var dayRel = "today";
-      if (zd > hd) dayRel = "tomorrow";
-      else if (zd < hd) dayRel = "yesterday";
+      var zd = dateFmt(zone).format(date);
+      var hd = dateFmt(home).format(refDate || date);
+      var diff = Math.round((Date.parse(zd) - Date.parse(hd)) / 86400000);
+      var dayRel = diff === 0 ? "today" : diff === 1 ? "tomorrow" :
+        diff === -1 ? "yesterday" : (diff > 0 ? "+" + diff + "d" : diff + "d");
       return { minutes: d, label: label, dayRel: dayRel };
     },
     format12: function (h) {
@@ -173,11 +174,17 @@
     return t;
   }
 
-  function chipsHTML(zone, date) {
-    var d = WC.time.homeDelta(date, zone, state.home);
-    return '<span class="chip chip-offset mono">' + d.label + "</span>" +
-      '<span class="chip mono ' + (d.dayRel === "today" ? "chip-today" : "chip-otherday") + '">' +
-      d.dayRel + "</span>";
+  function chipsHTML(zone, date, isHome) {
+    /* refDate is intentionally the real, unscrubbed present */
+    var d = WC.time.homeDelta(date, zone, state.home, new Date());
+    var dayChip = d.dayRel === "today" ? "" :
+      '<span class="chip mono chip-otherday">' + d.dayRel + "</span>";
+    if (isHome) {
+      return '<span class="chip chip-offset mono">your time</span>' + dayChip;
+    }
+    var todayChip = d.dayRel === "today" ?
+      '<span class="chip mono chip-today">today</span>' : dayChip;
+    return '<span class="chip chip-offset mono">' + d.label + "</span>" + todayChip;
   }
 
   function cardHTML(zone, isHome, date) {
@@ -193,11 +200,7 @@
     html += "</div>" +
       '<div class="card-time mono">' + timeText(p) + "</div>" +
       '<div class="card-zoneline mono">' + p.abbr + " &middot; " + WC.time.offsetLabel(off) + "</div>";
-    if (!isHome) {
-      html += '<div class="card-chips">' + chipsHTML(zone, date) + "</div>";
-    } else {
-      html += '<div class="card-chips"><span class="chip chip-offset mono">your time</span></div>';
-    }
+    html += '<div class="card-chips">' + chipsHTML(zone, date, isHome) + "</div>";
     html += '<div class="card-date mono">' + p.weekday + ", " + p.month + " " + p.day + "</div></article>";
     return html;
   }
@@ -231,7 +234,7 @@
           p.weekday + ", " + p.month + " " + p.day;
         cards[i].querySelector(".card-daynight").innerHTML = dayNightIcon(isDaylight(date, zone, p));
         cards[i].querySelector(".card-zoneline").innerHTML = p.abbr + " &middot; " + WC.time.offsetLabel(off);
-        if (!isHome) cards[i].querySelector(".card-chips").innerHTML = chipsHTML(zone, date);
+        cards[i].querySelector(".card-chips").innerHTML = chipsHTML(zone, date, isHome);
       }
       for (var j = 0; j < subscribers.length; j++) subscribers[j](date);
     }

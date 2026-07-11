@@ -116,7 +116,7 @@
     } else {
       timeStr = p.hh + ":" + p.mm;
     }
-    tipEl.textContent = WC.cityName(zone) + " · " + timeStr +
+    tipEl.textContent = ((WC.names && WC.names.display) ? WC.names.display(zone) : WC.cityName(zone)) + " · " + timeStr +
       " · " + p.abbr;
     tipEl.removeAttribute("hidden");
     var host = document.getElementById("map-host").getBoundingClientRect();
