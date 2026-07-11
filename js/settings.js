@@ -254,5 +254,6 @@
     zones.splice(from, 1);
     zones.splice(to, 0, dragZone);
     WC.prefs.setZones(zones);
+    dragZone = null;
   });
 })();
