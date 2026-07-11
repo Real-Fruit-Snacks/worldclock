@@ -158,6 +158,17 @@ T("zone search", function () {
   assert(r.some(function (m) { return m.zone === "Asia/Kolkata"; }), "kolk finds Kolkata");
   assertEq(WC.search("zzzznothing").length, 0, "no junk matches");
 });
+T("map has no antimeridian chords", function () {
+  var nums = WC.MAP_PATH.match(/[ML](\d+\.?\d*) (\d+\.?\d*)/g);
+  var prevX = null, chords = 0;
+  for (var i = 0; i < nums.length; i++) {
+    var isMove = nums[i].charAt(0) === "M";
+    var x = parseFloat(nums[i].slice(1));
+    if (!isMove && prevX !== null && Math.abs(x - prevX) > 400) chords++;
+    prevX = x;
+  }
+  assertEq(chords, 0, "no full-width horizontal chords in land path");
+});
 </script>
 </body>
 </html>
