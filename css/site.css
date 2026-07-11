@@ -77,3 +77,57 @@ main {
 @media (prefers-reduced-motion: no-preference) {
   .icon-btn, .footer a { transition: background var(--twb-transition), color var(--twb-transition); }
 }
+
+/* --- clock cards --- */
+.clock-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+.clock-card {
+  position: relative;
+  background: var(--twb-bg-1); border: 1px solid var(--twb-border);
+  border-radius: var(--twb-radius-m); padding: 12px 14px;
+}
+.clock-card-home { border-top: 2px solid var(--twb-accent); }
+.card-top { display: flex; align-items: center; gap: 8px; }
+.card-city {
+  font-family: var(--twb-font-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--twb-accent);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.card-daynight { margin-left: auto; display: inline-flex; }
+.card-home-tag { font-size: 9.5px; color: var(--twb-text-faint); }
+.card-remove {
+  position: absolute; top: 6px; right: 6px;
+  width: 20px; height: 20px; padding: 0; line-height: 1;
+  background: transparent; border: none; border-radius: var(--twb-radius-s);
+  color: var(--twb-text-faint); font-size: 14px; cursor: pointer;
+  opacity: 0;
+}
+.clock-card:hover .card-remove, .card-remove:focus-visible { opacity: 1; }
+.card-remove:hover { background: var(--twb-bg-3); color: var(--twb-red); }
+.clock-card:has(.card-remove) .card-daynight { margin-right: 14px; }
+.card-time { font-size: 27px; color: var(--twb-text-normal); margin: 6px 0 2px; }
+.card-ampm { font-size: 12px; color: var(--twb-text-muted); margin-left: 5px; }
+.card-zoneline { font-size: 11px; color: var(--twb-text-muted); }
+.card-chips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.chip {
+  font-size: 11px; padding: 1px 7px;
+  border-radius: var(--twb-radius-s); border: 1px solid;
+}
+.chip-offset {
+  color: var(--twb-accent-alt);
+  background: var(--twb-active-line); border-color: var(--twb-tag-border);
+}
+.chip-today {
+  color: var(--twb-text-muted);
+  background: transparent; border-color: var(--twb-border);
+}
+.chip-otherday {
+  color: var(--twb-warm);
+  background: var(--twb-highlight); border-color: var(--twb-warm);
+}
+.card-date { font-size: 11px; color: var(--twb-text-faint); margin-top: 7px; }
+.clock-card.dragging { opacity: 0.4; }
+.clock-card.drag-over { border-color: var(--twb-accent); }

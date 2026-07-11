@@ -87,3 +87,129 @@
     }
   };
 })();
+
+/* Card rendering + 1 s tick. */
+(function () {
+  "use strict";
+  window.WC = window.WC || {};
+
+  var subscribers = [];
+  WC.onSecond = function (fn) { subscribers.push(fn); };
+
+  function pref(k, d) { return WC.prefs ? WC.prefs.get(k, d) : d; }
+
+  function detectHome() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; }
+    catch (e) { return "UTC"; }
+  }
+
+  var state = { zones: [], home: detectHome() };
+
+  function loadState() {
+    state.home = pref("wc-home", detectHome());
+    var raw = pref("wc-zones", null);
+    var zones = null;
+    if (raw) { try { zones = JSON.parse(raw); } catch (e) { zones = null; } }
+    if (!zones || !zones.length) zones = WC.DEFAULT_ZONES.slice();
+    /* Drop zones this browser no longer knows; keep home out of the list. */
+    var ok = [];
+    for (var i = 0; i < zones.length; i++) {
+      var z = zones[i];
+      if (z === state.home) continue;
+      try { new Intl.DateTimeFormat("en-US", { timeZone: z }); ok.push(z); }
+      catch (e) { console.warn("worldclock: dropping unknown zone", z); }
+    }
+    state.zones = ok;
+  }
+
+  function dayNightIcon(isDay) {
+    return isDay
+      ? '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="var(--twb-warm)"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4" stroke="var(--twb-warm)" stroke-width="1.2" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M12.5 9.5A5 5 0 1 1 6.5 3.5 4 4 0 0 0 12.5 9.5Z" fill="var(--twb-text-faint)"/></svg>';
+  }
+
+  /* Day if the sun is up at the zone's coords; 06-18 fallback without coords. */
+  function isDaylight(date, zone, p) {
+    var c = WC.ZONES && WC.ZONES[zone];
+    if (c && WC.sun) return WC.sun.elevation(c[0], c[1], date) > -0.833;
+    return p.h >= 6 && p.h < 18;
+  }
+
+  function timeText(p) {
+    var secs = pref("wc-seconds", "on") === "on";
+    var h24 = pref("wc-hours", "24") === "24";
+    var t;
+    if (h24) t = p.hh + ":" + p.mm + (secs ? ":" + p.ss : "");
+    else {
+      var f = WC.time.format12(p.h);
+      t = f.h12 + ":" + p.mm + (secs ? ":" + p.ss : "") +
+          '<span class="card-ampm">' + f.ampm + "</span>";
+    }
+    return t;
+  }
+
+  function cardHTML(zone, isHome, date) {
+    var p = WC.time.parts(date, zone);
+    var off = WC.time.offsetMinutes(date, zone);
+    var name = zone === "UTC" ? "UTC" : WC.cityName(zone);
+    var html = '<article class="clock-card' + (isHome ? " clock-card-home" : "") +
+      '" data-zone="' + zone + '" draggable="' + (isHome ? "false" : "true") + '">' +
+      '<div class="card-top"><span class="card-city" title="' + zone + '">' + name + "</span>" +
+      '<span class="card-daynight">' + dayNightIcon(isDaylight(date, zone, p)) + "</span>";
+    if (!isHome) html += '<button class="card-remove" title="Remove" aria-label="Remove ' + name + '">&times;</button>';
+    else html += '<span class="card-home-tag manifest-label">HOME</span>';
+    html += "</div>" +
+      '<div class="card-time mono">' + timeText(p) + "</div>" +
+      '<div class="card-zoneline mono">' + p.abbr + " &middot; " + WC.time.offsetLabel(off) + "</div>";
+    if (!isHome) {
+      var d = WC.time.homeDelta(date, zone, state.home);
+      html += '<div class="card-chips">' +
+        '<span class="chip chip-offset mono">' + d.label + "</span>" +
+        '<span class="chip mono ' + (d.dayRel === "today" ? "chip-today" : "chip-otherday") + '">' +
+        d.dayRel + "</span></div>";
+    } else {
+      html += '<div class="card-chips"><span class="chip chip-offset mono">your time</span></div>';
+    }
+    html += '<div class="card-date mono">' + p.weekday + ", " + p.month + " " + p.day + "</div></article>";
+    return html;
+  }
+
+  WC.clocks = {
+    state: function () { return state; },
+    render: function () {
+      loadState();
+      var grid = document.getElementById("clock-grid");
+      if (!grid) return;
+      var date = new Date();
+      var html = cardHTML(state.home, true, date);
+      for (var i = 0; i < state.zones.length; i++) html += cardHTML(state.zones[i], false, date);
+      grid.innerHTML = html;
+    },
+    tick: function () {
+      var date = new Date();
+      var utc = document.getElementById("utc-clock");
+      if (utc) {
+        var u = WC.time.parts(date, "UTC");
+        utc.textContent = u.hh + ":" + u.mm + ":" + u.ss;
+      }
+      var cards = document.querySelectorAll(".clock-card");
+      for (var i = 0; i < cards.length; i++) {
+        var zone = cards[i].getAttribute("data-zone");
+        var p = WC.time.parts(date, zone);
+        cards[i].querySelector(".card-time").innerHTML = timeText(p);
+        cards[i].querySelector(".card-date").textContent =
+          p.weekday + ", " + p.month + " " + p.day;
+      }
+      for (var j = 0; j < subscribers.length; j++) subscribers[j](date);
+    }
+  };
+
+  window.addEventListener("wc:zones", WC.clocks.render);
+  window.addEventListener("wc:prefs", WC.clocks.render);
+
+  if (document.getElementById("clock-grid")) {   /* not on tests.html */
+    WC.clocks.render();
+    WC.clocks.tick();
+    setInterval(WC.clocks.tick, 1000);
+  }
+})();
