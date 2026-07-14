@@ -420,7 +420,11 @@ main {
   background: var(--twb-highlight); border: 1px solid var(--twb-warm);
   border-radius: var(--twb-radius-s); color: var(--twb-warm);
   font-size: 10.5px; letter-spacing: 0.06em; padding: 3px 9px; cursor: pointer;
+  /* Always occupies its slot; only paints while scrubbed, so the flex:1
+     slider track never resizes mid-drag when crossing NOW. */
+  visibility: hidden;
 }
+:root[data-scrub="on"] .scrub-now-btn { visibility: visible; }
 .scrub-now-btn:hover { background: var(--twb-warm); color: var(--twb-text-on-accent); }
 
 /* --- help overlay --- */

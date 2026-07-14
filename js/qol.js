@@ -114,7 +114,8 @@
     var m = WC.scrub.minutes;
     range.value = m;
     label.textContent = WC.scrubLabel(m);
-    nowBtn.hidden = m === 0;
+    /* RESET visibility is driven by :root[data-scrub] in CSS so its box is
+       always reserved — toggling it here would resize the flex:1 slider mid-drag. */
   }
   WC.qol.scrubBy = function (delta) { WC.setScrub(WC.scrub.minutes + delta); };
   WC.qol.resetScrub = function () { WC.setScrub(0); };
