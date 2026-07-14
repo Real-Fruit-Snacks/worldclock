@@ -410,7 +410,9 @@
       if (now - lastFlee > 2500) fleeStreak = 0;   // you gave up the chase -> reset
       fleeStreak++;
       lastFlee = now;
-      if (cfgScare && fleeStreak >= 6 && now - lastScare > 9000) {
+      // Over-chasing turns the tables on everyone, even with SCARE off — you
+      // asked for it by relentlessly cornering the poor thing.
+      if (fleeStreak >= 6 && now - lastScare > 9000) {
         fleeStreak = 0; enterScare(now); return;   // cornered -> BOO
       }
       zipAway(true);

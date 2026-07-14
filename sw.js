@@ -1,5 +1,5 @@
 /* Cache-first with background refresh. Bump CACHE to invalidate. */
-var CACHE = "worldclock-v1.6.2";
+var CACHE = "worldclock-v1.6.3";
 var ASSETS = [
   "./", "index.html", "css/tokens.css", "css/site.css",
   "js/zones.js", "js/data.js", "js/settings.js", "js/clocks.js",
