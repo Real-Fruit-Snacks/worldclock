@@ -54,7 +54,7 @@
   var NAP_AFTER = 60000;     // idle this long with no input -> nap
   var BORED_AFTER = 22000;   // no startle this long while drifting -> spin
   var SPOOK_DIST = 50;       // pointer within this many px -> startled
-  var SPOOK_COOLDOWN = 300;  // minimum gap between startles (short: chase it around)
+  var SPOOK_COOLDOWN = 120;  // minimum gap between startles (tiny: chase it back-to-back)
 
   // Eased "core" position; roam mode renders a drifting bob on top of it.
   var x = window.innerWidth - SIZE - 16;
@@ -402,7 +402,8 @@
   var fleeStreak = 0, lastFlee = 0;
   function maybeSpook() {
     if (reduced || mx === null || !cfgFlee) return;
-    if (roamPhase === "spook" || roamPhase === "nap" || roamPhase === "chase" ||
+    // Note: "spook" is NOT excluded — catching it mid-dash makes it dart again.
+    if (roamPhase === "nap" || roamPhase === "chase" ||
         roamPhase === "scare" || roamPhase === "sunnap") return;
     var now = Date.now();
     if (now - lastStartle < SPOOK_COOLDOWN) return;
@@ -412,10 +413,14 @@
       lastFlee = now;
       // Over-chasing turns the tables on everyone, even with SCARE off — you
       // asked for it by relentlessly cornering the poor thing.
-      if (fleeStreak >= 6 && now - lastScare > 9000) {
+      if (fleeStreak >= 10 && now - lastScare > 9000) {
         fleeStreak = 0; enterScare(now); return;   // cornered -> BOO
       }
-      zipAway(true);
+      if (roamPhase === "spook") {                 // already dashing -> just pick a new escape
+        opposite(); phaseUntil = now + 700; lastStartle = now;
+      } else {
+        zipAway(true);
+      }
     }
   }
   function spookStep(now) {
