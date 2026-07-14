@@ -54,7 +54,7 @@
   var NAP_AFTER = 60000;     // idle this long with no input -> nap
   var BORED_AFTER = 22000;   // no startle this long while drifting -> spin
   var SPOOK_DIST = 50;       // pointer within this many px -> startled
-  var SPOOK_COOLDOWN = 2600; // minimum gap between startles
+  var SPOOK_COOLDOWN = 300;  // minimum gap between startles (short: chase it around)
 
   // Eased "core" position; roam mode renders a drifting bob on top of it.
   var x = window.innerWidth - SIZE - 16;
@@ -397,12 +397,24 @@
       say(pick(QUIPS.spook), "boop");
     }
   }
+  // Chasing it relentlessly makes it flee, flee, flee... and if you push it too
+  // far (and jump scares are enabled) it turns on you.
+  var fleeStreak = 0, lastFlee = 0;
   function maybeSpook() {
     if (reduced || mx === null || !cfgFlee) return;
     if (roamPhase === "spook" || roamPhase === "nap" || roamPhase === "chase" ||
         roamPhase === "scare" || roamPhase === "sunnap") return;
-    if (Date.now() - lastStartle < SPOOK_COOLDOWN) return;
-    if (dist(x + SIZE / 2, y + SIZE / 2, mx, my) <= SPOOK_DIST) zipAway(true);
+    var now = Date.now();
+    if (now - lastStartle < SPOOK_COOLDOWN) return;
+    if (dist(x + SIZE / 2, y + SIZE / 2, mx, my) <= SPOOK_DIST) {
+      if (now - lastFlee > 2500) fleeStreak = 0;   // you gave up the chase -> reset
+      fleeStreak++;
+      lastFlee = now;
+      if (cfgScare && fleeStreak >= 6 && now - lastScare > 9000) {
+        fleeStreak = 0; enterScare(now); return;   // cornered -> BOO
+      }
+      zipAway(true);
+    }
   }
   function spookStep(now) {
     ease();
