@@ -874,8 +874,9 @@
   function scareOverlay() {
     var o = document.createElement("div");
     o.className = "wc-scare-overlay";
+    var dc = petColor ? ' data-color="' + petColor + '"' : '';   // wear the ghost's colour
     o.innerHTML =
-      '<svg class="wc-scare-face" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<svg class="wc-scare-face"' + dc + ' viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       '<path class="face-body" d="M2 16 V7 Q2 1 8 1 Q14 1 14 7 V16 L12 14.4 L10 16 L8 14.4 L6 16 L4 14.4 Z"/>' +
       '<circle class="face-dark" cx="5.7" cy="7" r="2"/>' +
       '<circle class="face-dark" cx="10.3" cy="7" r="2"/>' +
