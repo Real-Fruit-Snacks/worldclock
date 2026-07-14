@@ -493,6 +493,17 @@ main {
 }
 
 /* --- map measure connectors (multiple; label rides the line) --- */
+.map-clear-btn {
+  position: absolute; bottom: 8px; right: 8px; z-index: 4;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; height: auto;
+  font-size: 10.5px; font-weight: 650; letter-spacing: 0.07em;
+  background: var(--twb-bg-2); border: 1px solid var(--twb-border);
+  border-radius: var(--twb-radius-s); color: var(--twb-text-muted);
+  cursor: pointer; box-shadow: var(--twb-shadow-pane);
+}
+.map-clear-btn:hover { border-color: var(--twb-red); color: var(--twb-red); background: var(--twb-bg-3); }
+.map-clear-btn:focus-visible { outline: 2px solid var(--twb-focus-ring); outline-offset: 1px; }
 .conn-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
 .conn-line {
   fill: none; stroke: var(--twb-accent-alt); stroke-width: 1.5;

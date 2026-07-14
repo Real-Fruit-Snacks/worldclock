@@ -57,7 +57,7 @@
   }
 
   var svg = null, nightEl = null, sunEl = null, markersEl = null, tipEl = null;
-  var connEl = null, snapEl = null, cdrag = null, conns = [];
+  var connEl = null, snapEl = null, cdrag = null, conns = [], clearBtn = null;
 
   function el(name, attrs) {
     var e = document.createElementNS("http://www.w3.org/2000/svg", name);
@@ -95,6 +95,14 @@
     tipEl.className = "map-tip mono";
     tipEl.setAttribute("hidden", "");
     host.appendChild(tipEl);
+    clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "map-clear-btn mono";
+    clearBtn.hidden = true;
+    clearBtn.setAttribute("aria-label", "Clear all measurement lines");
+    clearBtn.innerHTML = '<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>CLEAR';
+    clearBtn.addEventListener("click", function () { WC.map.clearConnectors(); });
+    host.appendChild(clearBtn);
     svg.style.touchAction = "none";
     svg.addEventListener("pointerdown", connStart);
     svg.addEventListener("pointermove", connMove);
@@ -238,6 +246,10 @@
       g.appendChild(title);
       connEl.appendChild(g);
     }
+    syncClearBtn();
+  }
+  function syncClearBtn() {
+    if (clearBtn) clearBtn.hidden = conns.length === 0;
   }
 
   var lastMinute = -1;
@@ -276,6 +288,7 @@
     clearConnectors: function () {
       conns = [];
       if (connEl) connEl.innerHTML = "";
+      syncClearBtn();
     }
   };
 
