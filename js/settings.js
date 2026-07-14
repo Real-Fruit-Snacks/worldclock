@@ -103,7 +103,8 @@
     settingRow("FLEE", petToggle("wc-pet-flee")) +
     settingRow("READ", petToggle("wc-pet-read")) +
     settingRow("TRICKS", petToggle("wc-pet-tricks")) +
-    settingRow("SPEECH", petToggle("wc-pet-speech"));
+    settingRow("SPEECH", petToggle("wc-pet-speech")) +
+    settingRow("SCARE", petToggle("wc-pet-scare"));
 
   function petToggle(key) {
     return '<span class="seg" data-petpref="' + key + '">' +
@@ -112,7 +113,8 @@
 
   function petDefaults(key) {
     return { "wc-pet": "float", "wc-pet-nap": "on", "wc-pet-flee": "on",
-      "wc-pet-read": "on", "wc-pet-tricks": "on", "wc-pet-speech": "off" }[key];
+      "wc-pet-read": "on", "wc-pet-tricks": "on", "wc-pet-speech": "off",
+      "wc-pet-scare": "off" }[key];
   }
 
   function refreshPet() {

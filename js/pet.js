@@ -21,7 +21,9 @@
     nap:   ["zzz", "> sleep 60", "afk", "5 more min"],
     boop:  ["boop!", "yay", "<3", "again!", ":D"],
     spook: ["!", "eek", "> ^C", "yikes"],
-    fling: ["wheee", "whoa", "> yeet"]
+    fling: ["wheee", "whoa", "> yeet"],
+    chase: ["tag!", "gotcha", "> follow", "wait up", "hehe"],
+    sail: ["> set sail", "land ho", "glub glub", "yo ho"]
   };
   function pick(a) { return a[(Math.random() * a.length) | 0]; }
   var lastQuip = 0, QUIP_GAP = 12000;
@@ -107,7 +109,7 @@
   }
 
   // Per-quirk flags + appearance, read from localStorage (default on; speech off).
-  var cfgNap = true, cfgFlee = true, cfgRead = true, cfgTricks = true, cfgSpeech = false;
+  var cfgNap = true, cfgFlee = true, cfgRead = true, cfgTricks = true, cfgSpeech = false, cfgScare = false;
   function boolKey(k, dflt) {
     try {
       var v = localStorage.getItem(k);
@@ -133,6 +135,7 @@
     cfgRead = boolKey("wc-pet-read", true);
     cfgTricks = boolKey("wc-pet-tricks", true);
     cfgSpeech = boolKey("wc-pet-speech", false);
+    cfgScare = boolKey("wc-pet-scare", false);
     var c = parseInt(localStorage.getItem("wc-pet-color"), 10);
     petColor = (c >= 1 && c < COLOR_COUNT) ? c : 0;
     applyPetColor();
@@ -177,6 +180,47 @@
     setTimeout(function () {
       if (s.parentNode) s.parentNode.removeChild(s);
     }, 1400);
+  }
+
+  // --- map interaction: the ghost can visit the live world map ---
+  // The map SVG sits in document flow and scrolls; the ghost is fixed, so map
+  // targets are recomputed from the SVG's current on-screen rect every frame.
+  function mapRect() {
+    var el = document.querySelector(".worldmap");
+    if (!el) return null;
+    if (root.getAttribute("data-map") === "collapsed") return null;
+    var r = el.getBoundingClientRect();
+    if (r.width < 80 || r.height < 40) return null;
+    if (r.bottom < TOP_CLAMP + 20 || r.top > window.innerHeight - 20) return null;
+    return r;
+  }
+  // Place the ghost's CENTRE on a lon/lat over the map; returns clamped core.
+  function projToCore(lon, lat, r) {
+    var cx = r.left + (lon + 180) / 360 * r.width;
+    var cy = r.top + (90 - lat) / 180 * r.height;
+    return { x: clampX(cx - SIZE / 2), y: clampY(cy - SIZE / 2) };
+  }
+  // Open-ocean waypoints [lat, lon] for boat mode (reliably water).
+  var OCEAN = [[35, -40], [46, -24], [-22, -16], [30, -150], [8, -158],
+    [-32, -108], [-40, -38], [-16, 82], [6, 66], [40, 156], [-46, 92]];
+  function shownZones() {
+    try { var st = WC.clocks.state(); return [st.home].concat(st.zones); }
+    catch (e) { return []; }
+  }
+  function petNow() { return (window.WC && WC.now) ? WC.now() : new Date(); }
+
+  // Faint afterimage silhouettes left behind while the ghost zips fast.
+  var lastTrail = 0;
+  function spawnTrail(now) {
+    if (now - lastTrail < 55) return;
+    lastTrail = now;
+    var t = document.createElement("div");
+    t.className = "pet-trail";
+    t.style.left = x.toFixed(1) + "px"; t.style.top = y.toFixed(1) + "px";
+    t.style.width = SIZE + "px"; t.style.height = SIZE + "px";
+    t.innerHTML = sprite.innerHTML;
+    document.body.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 430);
   }
   // Only accept clicks while the ghost is holding still enough to boop; this
   // also stops a wandering ghost from stealing clicks on the text beneath it.
@@ -223,10 +267,27 @@
   document.addEventListener("click", markActivity, true);
   document.addEventListener("touchstart", markActivity, true);
 
-  // Boop: happy scale-bounce, a heart or a "!", then zip away.
+  // Boop: happy scale-bounce, a heart or a "!", then zip away. Spam boops in
+  // quick succession make it dizzy instead.
+  var boopTimes = [];
+  function goDizzy() {
+    boopTimes = [];
+    petting = false; spinning = true;
+    setNap(false);
+    sprite.className = "pet-sprite pet-dizzy";
+    say("@_@", "boop", true);
+    setTimeout(function () {
+      spinning = false;
+      if (!petting) sprite.className = "pet-sprite";
+    }, 1500);
+  }
   function boop() {
     markActivity();
     cyclePetColor();
+    var bnow = Date.now();
+    boopTimes.push(bnow);
+    boopTimes = boopTimes.filter(function (t) { return bnow - t < 1500; });
+    if (boopTimes.length >= 4 && cfgTricks && !reduced) { goDizzy(); return; }
     if (petting) return;
     petting = true;
     setNap(false);
@@ -272,6 +333,7 @@
     lean += (flingVX * 1.2 - lean) * 0.2;
     if (lean > 16) lean = 16;
     if (lean < -16) lean = -16;
+    if (Math.abs(flingVX) + Math.abs(flingVY) > 8) spawnTrail(now);
     renderAt(x, y);
     if (Math.abs(flingVX) + Math.abs(flingVY) < 1.2) { lean = 0; enterDrift(now); }
   }
@@ -337,12 +399,14 @@
   }
   function maybeSpook() {
     if (reduced || mx === null || !cfgFlee) return;
-    if (roamPhase === "spook" || roamPhase === "nap") return;
+    if (roamPhase === "spook" || roamPhase === "nap" || roamPhase === "chase" ||
+        roamPhase === "scare" || roamPhase === "sunnap") return;
     if (Date.now() - lastStartle < SPOOK_COOLDOWN) return;
     if (dist(x + SIZE / 2, y + SIZE / 2, mx, my) <= SPOOK_DIST) zipAway(true);
   }
   function spookStep(now) {
     ease();
+    spawnTrail(now);
     renderAt(x, y);
     if ((now > phaseUntil && dist(x, y, tgt.x, tgt.y) < 8) || now > phaseUntil + 1200)
       endSpook(now);
@@ -519,8 +583,26 @@
     setBoopable(false);
     readEl = null;
     pet.style.opacity = "";
+    if (pet.className) pet.className = "";           // drop any lingering nap/startle class
   }
   function nextDriftAction(now) {
+    if (cfgTricks && !reduced) {
+      // Rare opt-in jump scare after you've sat idle a while.
+      if (cfgScare && mx !== null && now - lastActive > 12000 &&
+          now - lastScare > SCARE_COOLDOWN && Math.random() < 0.5) {
+        enterScare(now); return;
+      }
+      var roll = Math.random();
+      if (mx !== null && roll < 0.14) { enterChase(now); return; }  // follow the cursor
+      if (mapRect() && roll < 0.5) {                                // go play on the map
+        var p = Math.random();
+        if (p < 0.3) enterSail(now);
+        else if (p < 0.6) enterHop(now);
+        else if (p < 0.8) enterSurf(now);
+        else enterSunnap(now);
+        return;
+      }
+    }
     var r = Math.random();
     if (r < 0.22) enterVanish(now);                        // fade off an edge
     else if (r < 0.40) enterPeek(now);                     // hide on a block
@@ -631,6 +713,175 @@
     enterDrift(Date.now());
   }
 
+  // --- boat mode: sail between open-ocean waypoints with a wave-bob + wake ---
+  var sailPts = [], sailIdx = 0, lastWake = 0;
+  function enterSail(now) {
+    if (!mapRect()) { pickWaypoint(); return; }
+    sailPts = [];
+    var n = 2 + (Math.random() < 0.5 ? 1 : 0);
+    for (var i = 0; i < n; i++) sailPts.push(OCEAN[(Math.random() * OCEAN.length) | 0]);
+    sailIdx = 0; lastWake = 0;
+    roamPhase = "sail"; tgtEase = 0.02;
+    phaseUntil = now + 9000 + Math.random() * 6000;
+    clearPeek(); setBoopable(false); readEl = null; pet.style.opacity = "";
+    say(pick(QUIPS.sail));
+  }
+  function sailStep(now) {
+    var r = mapRect();
+    if (!r) { enterDrift(now); return; }
+    var p = sailPts[sailIdx];
+    tgt = projToCore(p[1], p[0], r);
+    ease();
+    bobT += 0.06;
+    lean = Math.sin(bobT * 0.9) * 7;                 // rock like a boat on swell
+    renderAt(clampX(x), clampY(y + Math.sin(bobT) * 5));
+    if (now - lastWake > 600) { lastWake = now; spawnParticle("°", "pet-wake"); }
+    if (dist(x, y, tgt.x, tgt.y) < 16) {
+      sailIdx++;
+      if (sailIdx >= sailPts.length) { enterDrift(now); return; }
+    }
+    if (now > phaseUntil) enterDrift(now);
+  }
+
+  // --- marker-hop: bounce city marker to city marker, pausing at each ---
+  var hopZones = [], hopIdx = 0, hopWaitUntil = 0;
+  function enterHop(now) {
+    if (!mapRect() || !window.WC || !WC.ZONES) { pickWaypoint(); return; }
+    var zs = shownZones().filter(function (z) { return WC.ZONES[z]; });
+    if (zs.length < 2) { pickWaypoint(); return; }
+    hopZones = zs.sort(function () { return Math.random() - 0.5; }).slice(0, 4);
+    hopIdx = 0; hopWaitUntil = 0;
+    roamPhase = "hop"; tgtEase = 0.12;
+    phaseUntil = now + 10000 + Math.random() * 6000;
+    clearPeek(); setBoopable(false); readEl = null; pet.style.opacity = "";
+  }
+  function hopStep(now) {
+    var r = mapRect();
+    if (!r) { enterDrift(now); return; }
+    var z = hopZones[hopIdx], c = WC.ZONES[z];
+    if (!c) { enterDrift(now); return; }
+    tgt = projToCore(c[1], c[0], r);
+    ease();
+    bobT += 0.05;
+    renderAt(clampX(x), clampY(y + Math.sin(bobT) * 2.5));
+    if (dist(x, y, tgt.x, tgt.y) < 12) {
+      if (!hopWaitUntil) {
+        hopWaitUntil = now + 1000 + Math.random() * 900;
+        if (Math.random() < 0.4 && WC.cityName) say(WC.cityName(z).toLowerCase());
+      } else if (now > hopWaitUntil) {
+        hopWaitUntil = 0; hopIdx++;
+        if (hopIdx >= hopZones.length) { enterDrift(now); return; }
+      }
+    }
+    if (now > phaseUntil) enterDrift(now);
+  }
+
+  // --- surf: glide along the day/night terminator curve ---
+  var surfLon = 0, surfDir = 1;
+  function enterSurf(now) {
+    if (!mapRect() || !window.WC || !WC.sun) { pickWaypoint(); return; }
+    surfDir = Math.random() < 0.5 ? 1 : -1;
+    surfLon = surfDir > 0 ? -150 - Math.random() * 20 : 150 + Math.random() * 20;
+    roamPhase = "surf"; tgtEase = 0.12;
+    phaseUntil = now + 9000 + Math.random() * 5000;
+    clearPeek(); setBoopable(false); readEl = null; pet.style.opacity = "";
+  }
+  function surfStep(now) {
+    var r = mapRect();
+    if (!r) { enterDrift(now); return; }
+    surfLon += surfDir * 1.4;
+    if (surfLon > 168 || surfLon < -168) { enterDrift(now); return; }
+    var ss = WC.sun.subsolar(petNow());
+    var RAD = Math.PI / 180;
+    var H = (surfLon - ss.lon) * RAD;
+    var lat = Math.atan(-Math.cos(H) / Math.tan(ss.lat * RAD)) * 180 / Math.PI;
+    if (!isFinite(lat)) lat = 0;
+    lat = Math.max(-78, Math.min(78, lat));
+    tgt = projToCore(surfLon, lat, r);
+    ease();
+    bobT += 0.08;
+    lean = Math.sin(bobT) * 10;
+    renderAt(clampX(x), clampY(y + Math.sin(bobT) * 3));
+    if (now > phaseUntil) enterDrift(now);
+  }
+
+  // --- sun-nap: fly to the subsolar point and doze in the glow ---
+  var sunSettled = false;
+  function enterSunnap(now) {
+    var r = mapRect();
+    if (!r || !window.WC || !WC.sun) { pickWaypoint(); return; }
+    roamPhase = "sunnap"; tgtEase = 0.05; sunSettled = false;
+    phaseUntil = now + 8000 + Math.random() * 5000;
+    clearPeek(); setBoopable(true); readEl = null; pet.style.opacity = "";
+  }
+  function sunnapStep(now) {
+    var r = mapRect();
+    if (!r) { pet.className = ""; enterDrift(now); return; }
+    var ss = WC.sun.subsolar(petNow());
+    tgt = projToCore(ss.lon, ss.lat, r);
+    ease();
+    renderAt(x, y);
+    if (dist(x, y, tgt.x, tgt.y) < 6) {
+      if (!sunSettled) { sunSettled = true; pet.className = "pet-nap"; }
+      if (now - lastZ > 3000) { lastZ = now; spawnParticle("z", "pet-z"); }
+    }
+    if (now > phaseUntil) { pet.className = ""; enterDrift(now); }
+  }
+
+  // --- chase: a burst of following the pointer, then loses interest ---
+  function enterChase(now) {
+    if (mx === null) { pickWaypoint(); return; }
+    roamPhase = "chase";
+    phaseUntil = now + 3000 + Math.random() * 2500;
+    clearPeek(); setBoopable(false); readEl = null; pet.style.opacity = "";
+    say(pick(QUIPS.chase));
+  }
+  function chaseStep(now) {
+    if (mx === null || now > phaseUntil) { enterDrift(now); return; }
+    var cx = x + SIZE / 2, cy = y + SIZE / 2;
+    var dx = cx - mx, dy = cy - my, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var txp = mx + (dx / d) * 40 - SIZE / 2, typ = my + (dy / d) * 40 - SIZE / 2;
+    var vx = (txp - x) * 0.15, vy = (typ - y) * 0.15;
+    x += vx; y += vy;
+    lean += (vx * 1.5 - lean) * 0.1;
+    if (lean > 12) lean = 12;
+    if (lean < -12) lean = -12;
+    clampCore();
+    renderAt(x, y);
+  }
+
+  // --- jump scare (opt-in): lunge at the pointer, pop big, then bolt ---
+  var lastScare = 0, SCARE_COOLDOWN = 45000, scareBooed = false;
+  function flashVignette() {
+    var v = document.createElement("div");
+    v.className = "wc-scare-flash";
+    document.body.appendChild(v);
+    setTimeout(function () { if (v.parentNode) v.parentNode.removeChild(v); }, 660);
+  }
+  function enterScare(now) {
+    if (mx === null) { pickWaypoint(); return; }
+    roamPhase = "scare"; tgtEase = 0.34; scareBooed = false;
+    lastScare = now;
+    tgt = { x: clampX(mx - SIZE / 2), y: clampY(my - SIZE - 4) };
+    phaseUntil = now + 900;
+    clearPeek(); setBoopable(false); readEl = null; pet.style.opacity = "";
+  }
+  function scareStep(now) {
+    ease();
+    spawnTrail(now);
+    renderAt(x, y);
+    if (!scareBooed && dist(x, y, tgt.x, tgt.y) < 44) {
+      scareBooed = true;
+      sprite.className = "pet-sprite pet-boo";
+      flashVignette();
+      lastStartle = Date.now();
+    }
+    if (now > phaseUntil) {
+      sprite.className = "pet-sprite";
+      zipAway(false);            // bolt away after the fright
+    }
+  }
+
   function stepRoam(now) {
     // Only a settled ghost naps; let transient animations finish first.
     if (cfgNap && (roamPhase === "drift" || roamPhase === "peek" || roamPhase === "read") &&
@@ -646,6 +897,12 @@
       case "gone":   goneStep(now);   break;
       case "arrive": arriveStep(now); break;
       case "fling":  flingStep(now);  break;
+      case "sail":   sailStep(now);   break;
+      case "hop":    hopStep(now);    break;
+      case "surf":   surfStep(now);   break;
+      case "sunnap": sunnapStep(now); break;
+      case "chase":  chaseStep(now);  break;
+      case "scare":  scareStep(now);  break;
       case "drag":   /* positioned by pointermove */ break;
     }
   }
