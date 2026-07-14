@@ -852,11 +852,17 @@
 
   // --- jump scare (opt-in): lunge at the pointer, pop big, then bolt ---
   var lastScare = 0, SCARE_COOLDOWN = 45000, scareBooed = false;
-  function flashVignette() {
-    var v = document.createElement("div");
-    v.className = "wc-scare-flash";
-    document.body.appendChild(v);
-    setTimeout(function () { if (v.parentNode) v.parentNode.removeChild(v); }, 660);
+  function scareOverlay() {
+    var o = document.createElement("div");
+    o.className = "wc-scare-overlay";
+    o.innerHTML =
+      '<svg class="wc-scare-face" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<path class="face-body" d="M2 16 V7 Q2 1 8 1 Q14 1 14 7 V16 L12 14.4 L10 16 L8 14.4 L6 16 L4 14.4 Z"/>' +
+      '<circle class="face-dark" cx="5.7" cy="7" r="2"/>' +
+      '<circle class="face-dark" cx="10.3" cy="7" r="2"/>' +
+      '<ellipse class="face-dark" cx="8" cy="11.6" rx="1.9" ry="2.5"/></svg>';
+    document.body.appendChild(o);
+    setTimeout(function () { if (o.parentNode) o.parentNode.removeChild(o); }, 850);
   }
   function enterScare(now) {
     if (mx === null) { pickWaypoint(); return; }
@@ -873,7 +879,7 @@
     if (!scareBooed && dist(x, y, tgt.x, tgt.y) < 44) {
       scareBooed = true;
       sprite.className = "pet-sprite pet-boo";
-      flashVignette();
+      scareOverlay();
       lastStartle = Date.now();
     }
     if (now > phaseUntil) {

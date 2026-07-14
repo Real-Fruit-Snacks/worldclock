@@ -326,13 +326,32 @@ main {
 .pet-trail .pet-body { fill: var(--twb-text-faint); }
 .pet-trail g { display: none; }
 @keyframes pet-trail-fade { from { opacity: 0.32; } to { opacity: 0; } }
-/* Jump-scare vignette flash (opt-in). */
-.wc-scare-flash {
-  position: fixed; inset: 0; z-index: 25; pointer-events: none;
-  box-shadow: inset 0 0 120px 40px var(--twb-red);
-  animation: wc-scare-fade 0.65s ease-out forwards;
+/* Jump scare (opt-in): a huge ghost face lunges in, fills the screen, and
+   shakes, then fades. */
+.wc-scare-overlay {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  animation: wc-scare-fade 0.85s ease-out forwards;
 }
-@keyframes wc-scare-fade { 0% { opacity: 0.85; } 100% { opacity: 0; } }
+.wc-scare-face {
+  width: auto; height: 94vh; max-width: 96vw;
+  filter: drop-shadow(0 0 34px var(--twb-red));
+  animation: wc-scare-shake 0.45s ease-in-out, wc-scare-pop 0.85s ease-out;
+}
+.wc-scare-face .face-body { fill: var(--twb-red); }
+.wc-scare-face .face-dark { fill: var(--twb-bg-0); }
+@keyframes wc-scare-fade { 0%, 68% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes wc-scare-pop { 0% { transform: scale(0.2); } 22% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes wc-scare-shake {
+  0%, 100% { margin-left: 0; margin-top: 0; }
+  12% { margin-left: -26px; margin-top: 14px; }
+  26% { margin-left: 22px; margin-top: -18px; }
+  40% { margin-left: -30px; margin-top: -10px; }
+  55% { margin-left: 26px; margin-top: 18px; }
+  72% { margin-left: -16px; margin-top: 8px; }
+  86% { margin-left: 12px; margin-top: -6px; }
+}
 @keyframes pet-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
