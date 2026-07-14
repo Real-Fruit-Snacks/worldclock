@@ -155,7 +155,7 @@
     var segs = panel.querySelectorAll(".seg[data-pref]"); /* excludes pet rows (data-petpref) */
     for (var i = 0; i < segs.length; i++) {
       var key = segs[i].getAttribute("data-pref");
-      var defaults = { "wc-hours": "24", "wc-seconds": "on", "wc-theme": "system", "wc-accent": "0", "wc-maptime": "off" };
+      var defaults = { "wc-hours": "24", "wc-seconds": "on", "wc-theme": "system", "wc-accent": "0", "wc-maptime": "above" };
       var cur = WC.prefs.get(key, defaults[key]);
       var btns = segs[i].querySelectorAll("button");
       for (var j = 0; j < btns.length; j++)

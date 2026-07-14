@@ -354,5 +354,5 @@
   /* ---------- map time labels: one-time re-render on load ---------- */
   /* map.js loads before qol.js, so markers rendered at initial load couldn't
      see WC.timeShort; re-render once now that it exists, if the pref is on. */
-  if (WC.prefs.get("wc-maptime", "off") !== "off" && WC.map) WC.map.render();
+  if (WC.prefs.get("wc-maptime", "above") !== "off" && WC.map) WC.map.render();
 })();

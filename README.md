@@ -24,7 +24,7 @@ calm graphite surfaces, restrained ANSI accents, monospace manifest labels.
 
 ## Features
 
-- **Live day/night map** — equirectangular world map (Natural Earth) with a real solar terminator, the sun drawn at the subsolar point, and a marker for every city you track. Hover a marker to see its time; hover a card to find its marker. Optional time labels above or below every marker (settings → MAP TIMES). Don't care for the map? Collapse it to a slim bar (chevron or m) and let the cards have the room.
+- **Live day/night map** — equirectangular world map (Natural Earth) with a real solar terminator, the sun drawn at the subsolar point, and a marker for every city you track. Hover a marker to see its time; hover a card to find its marker. Each marker shows its current time above the dot by default — move the labels below or hide them in settings → MAP TIMES. Don't care for the map? Collapse it to a slim bar (chevron or m) and let the cards have the room.
 - **Rich clock cards** — big monospace time, timezone abbreviation and UTC offset, offset-from-home chips (`+13h · tomorrow`), date line, and a sun/moon icon computed from actual solar elevation at that city.
 - **Home timezone** — auto-detected on first visit, overridable to any IANA zone. Your home card is pinned first; every offset is relative to it.
 - **Any timezone** — searchable picker over the browser's full IANA list (~420 zones) with common aliases ("nyc", "beijing", "zulu"), plus a curated suggestions list. Drag cards to reorder; everything persists locally.

@@ -110,7 +110,7 @@
       "data-zone": zone, transform: "translate(" + px(c[1]).toFixed(1) + "," + py(c[0]).toFixed(1) + ")" });
     if (home) g.appendChild(el("circle", { r: 7, "class": "marker-ring" }));
     g.appendChild(el("circle", { r: 3, "class": "marker-dot" }));
-    var mt = (WC.prefs && WC.prefs.get) ? WC.prefs.get("wc-maptime", "off") : "off";
+    var mt = (WC.prefs && WC.prefs.get) ? WC.prefs.get("wc-maptime", "above") : "above";
     if (mt !== "off" && WC.timeShort) {
       var t = el("text", { "class": "marker-time",
         y: mt === "above" ? (home ? -11 : -8) : (home ? 17 : 14),
